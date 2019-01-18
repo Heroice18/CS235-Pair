@@ -1,4 +1,3 @@
-//
 //  stack.h
 //  Assignment 2
 //

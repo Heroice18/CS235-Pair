@@ -1,12 +1,18 @@
-//  stack.h
-//  Assignment 2
-//
-//  Created by Brett Mills on 1/16/19.
-//  Copyright © 2019 Brett Mills. All rights reserved.
-//
+/***********************************************************************
+* Header:
+*    INFIX
+* Summary:
+*    This will contain just the prototype for the convertInfixToPostfix()
+*    function
+* Author
+*    <your names here>
+************************************************************************/
 
 #ifndef stack_h
 #define stack_h
+
+#include <cstddef>
+#include<iostream>
 
 #ifdef UNIT_TESTING
 int main(int argc, const char* argv[]);
@@ -17,29 +23,30 @@ namespace custom
 
 template <class T>
 class stack
-{    
+{
 private:
     T * buffer;
     int numElements;
     int numCapacity;
-    
-    void resize(int numCapacity);
-    
+
+
+
+
 public:
     // for testing purposes (stack tests)
     #ifdef UNIT_TESTING
         friend int ::main(int argc, const char* argv[]);
     #endif
-    
+
     // constructors and destructor
     stack();
     stack(int numCapacity);
     stack(const stack & rhs);
     ~stack();
-    
+
     // assignment operator
     stack & operator = (const stack & rhs);
-    
+
     // standard container interfaces
     int  size()     const { return numElements; }
     int  capacity() const { return numCapacity; }
@@ -51,27 +58,73 @@ public:
         else
             return false;
     }
-    
+
     void push(T t);
     void pop();
+    void resize(int cap) throw (const char*);
     // top setter (changes w/ pass by reference)
-    T    top() throw (const char *);
+    //T    top() throw (const char *);
     // top getter
-    T    top() const;
+    T  &  top() const;
 };
-    
+
     /*******************************************
      * VECTOR :: DEFAULT CONSTRUCTOR
      *******************************************/
     template <class T>
     stack<T>::stack()
     {
+
         buffer = NULL;
         numElements = 0;
         numCapacity = 0;
     }
-    
-    /**********************************************
+
+
+    template <class T>
+    void stack<T>::resize(int cap) throw (const char*)
+    {
+         //std::cout << cap;
+      if(cap >= 0)
+      {
+         T * Temp = NULL;
+
+         //std::cout << cap;
+         try{
+
+            if(cap > 0)
+            {
+            Temp = new T[cap];
+            }
+            //std::cout << cap;
+            if(cap < numElements)
+            {
+                numElements = cap;
+            }
+
+
+            numCapacity = cap;
+
+            //std::cout << cap;
+            if (buffer != NULL && Temp != NULL)
+	       {
+
+                   for (int i = 0; i < cap; ++i)
+                   {
+                     Temp[i] = buffer[i];
+                   }
+                   delete [] buffer;
+	       }
+            buffer = Temp;
+         }
+
+         catch(std::bad_alloc){
+            throw "new cannot be done";
+         }
+      }
+    }
+
+      /**********************************************
      * STACK : NON-DEFAULT CONSTRUCTOR
      * Preallocate the array to "capacity"
      **********************************************/
@@ -85,7 +138,7 @@ public:
             this->buffer = NULL;
             return;
         }
-        
+
         // attempt to allocate
         try
         {
@@ -95,18 +148,18 @@ public:
         {
             throw "ERROR: Unable to allocate buffer";
         }
-        
-        
+
+
         // copy over the stuff
         this->numCapacity = numCapacity;
         this->numElements = 0;
-        
+
         for (int i = 0; i < numCapacity; i++)
         {
             buffer[i] = T();
         }
     }
-    
+
     /*******************************************
      * STACK :: COPY CONSTRUCTOR
      *******************************************/
@@ -118,7 +171,7 @@ public:
         // copy contents
         *this = rhs;
     }
-    
+
     /*******************************************
      * VECTOR :: DESTRUCTOR
      *******************************************/
@@ -127,7 +180,7 @@ public:
     {
         clear();
     }
-    
+
     /*******************************************
      * STACK :: Assignment
      *******************************************/
@@ -139,7 +192,7 @@ public:
         {
             return *this;
         }
-        
+
         // check to see if the size
         if (numCapacity < rhs.size())
         {
@@ -150,30 +203,40 @@ public:
             // allocate memory to new array
             buffer = new T[numCapacity];
         }
-        
+
         // copy data
         for (int i = 0; i <= rhs.size(); i++)
         {
             buffer[i] = rhs.buffer[i];
         }
-        
+
         return *this;
     }
-    
+
     /*******************************************
      * VECTOR :: Push
      *******************************************/
     template <class T>
     void stack<T>::push(T t)
     {
+
         if (size() == capacity())
         {
-            resize(capacity() * 2);
+            if(capacity() == 0)
+            {
+                resize(1);
+            }
+            else
+            {
+               resize(capacity() * 2);
+            }
+            //int cap = numCapacity == 0 ? 1 : numCapacity * 2;
+            //resize(cap);
         }
-        
+
         buffer[numElements++] = t;
     }
-    
+
     /*******************************************
      * VECTOR :: Pop
      *******************************************/
@@ -185,11 +248,11 @@ public:
             --numElements;
         }
     }
-    
+
     /*******************************************
      * VECTOR :: Top
      *******************************************/
-    template <class T>
+    /*template <class T>
     T stack<T>::top() throw(const char *)
     {
         if (!empty())
@@ -199,16 +262,16 @@ public:
         else
             throw "ERROR";
     }
-    
+
     /*******************************************
      * VECTOR :: Top CONST
      *******************************************/
     template <class T>
-    T stack<T>::top() const
+    T &stack<T>::top() const
     {
         return buffer[numCapacity];
     }
-  
-    
+
+
 }
 #endif /* stack_h */

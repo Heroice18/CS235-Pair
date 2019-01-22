@@ -1,18 +1,16 @@
-/***********************************************************************
-* Header:
-*    INFIX
-* Summary:
-*    This will contain just the prototype for the convertInfixToPostfix()
-*    function
-* Author
-*    <your names here>
-************************************************************************/
+//
+//  stack.h
+//  Assignment 2
+//
+//  Created by Brett Mills on 1/16/19.
+//  Copyright © 2019 Brett Mills. All rights reserved.
+//
 
 #ifndef stack_h
 #define stack_h
 
 #include <cstddef>
-#include<iostream>
+#include <iostream>
 
 #ifdef UNIT_TESTING
 int main(int argc, const char* argv[]);
@@ -23,108 +21,97 @@ namespace custom
 
 template <class T>
 class stack
-{
+{    
 private:
     T * buffer;
     int numElements;
     int numCapacity;
-
-
-
-
+    
+    //void resize(int cap) throw (const char*);
+    
 public:
     // for testing purposes (stack tests)
     #ifdef UNIT_TESTING
         friend int ::main(int argc, const char* argv[]);
     #endif
-
+    
     // constructors and destructor
     stack();
     stack(int numCapacity);
     stack(const stack & rhs);
     ~stack();
-
+    
     // assignment operator
     stack & operator = (const stack & rhs);
-
+    
     // standard container interfaces
     int  size()     const { return numElements; }
     int  capacity() const { return numCapacity; }
-    void clear()          { numElements = 0; }
-    bool empty()
+    void clear()          { numElements = 0;    }
+    bool empty()    const 
     {
         if (size() == 0)
             return true;
         else
             return false;
     }
-
+    
     void push(T t);
     void pop();
-    void resize(int cap) throw (const char*);
     // top setter (changes w/ pass by reference)
-    //T    top() throw (const char *);
+    T &   top() throw(const char *);
     // top getter
-    T  &  top() const;
-};
+    T *   top() const;
+    
+    void resize(int cap) throw (const char*);
 
+};
+    template <class T>
+    void stack<T>::resize(int cap) throw (const char*)
+    {
+        if (cap >= 0)
+        {
+            T * temp = NULL;
+            try
+            {
+                if (cap > 0)
+                {
+                    temp = new T[cap];
+                }
+                if (cap < numElements)
+                {
+                    numElements = cap;
+                }
+                numCapacity = cap;
+                if (buffer != NULL && temp != NULL)
+                {
+                    for (int i = 0; i < cap; ++i)
+                    {
+                        temp[i] = buffer[i];
+                    }
+                    delete [] buffer;
+                }
+                buffer = temp;
+            }
+            catch (std::bad_alloc)
+            {
+                throw "ERROR: New cannot be created";
+            }
+        }
+    }
+    
     /*******************************************
-     * VECTOR :: DEFAULT CONSTRUCTOR
+     * STACK :: DEFAULT CONSTRUCTOR
      *******************************************/
     template <class T>
     stack<T>::stack()
     {
-
         buffer = NULL;
         numElements = 0;
         numCapacity = 0;
     }
-
-
-    template <class T>
-    void stack<T>::resize(int cap) throw (const char*)
-    {
-         //std::cout << cap;
-      if(cap >= 0)
-      {
-         T * Temp = NULL;
-
-         //std::cout << cap;
-         try{
-
-            if(cap > 0)
-            {
-            Temp = new T[cap];
-            }
-            //std::cout << cap;
-            if(cap < numElements)
-            {
-                numElements = cap;
-            }
-
-
-            numCapacity = cap;
-
-            //std::cout << cap;
-            if (buffer != NULL && Temp != NULL)
-	       {
-
-                   for (int i = 0; i < cap; ++i)
-                   {
-                     Temp[i] = buffer[i];
-                   }
-                   delete [] buffer;
-	       }
-            buffer = Temp;
-         }
-
-         catch(std::bad_alloc){
-            throw "new cannot be done";
-         }
-      }
-    }
-
-      /**********************************************
+    
+    /**********************************************
      * STACK : NON-DEFAULT CONSTRUCTOR
      * Preallocate the array to "capacity"
      **********************************************/
@@ -138,7 +125,7 @@ public:
             this->buffer = NULL;
             return;
         }
-
+        
         // attempt to allocate
         try
         {
@@ -148,18 +135,18 @@ public:
         {
             throw "ERROR: Unable to allocate buffer";
         }
-
-
+        
+        
         // copy over the stuff
         this->numCapacity = numCapacity;
         this->numElements = 0;
-
+        
         for (int i = 0; i < numCapacity; i++)
         {
             buffer[i] = T();
         }
     }
-
+    
     /*******************************************
      * STACK :: COPY CONSTRUCTOR
      *******************************************/
@@ -171,16 +158,16 @@ public:
         // copy contents
         *this = rhs;
     }
-
+    
     /*******************************************
-     * VECTOR :: DESTRUCTOR
+     * STACK :: DESTRUCTOR
      *******************************************/
     template<class T>
     stack<T>::~stack()
     {
         clear();
     }
-
+    
     /*******************************************
      * STACK :: Assignment
      *******************************************/
@@ -192,51 +179,52 @@ public:
         {
             return *this;
         }
-
+        
         // check to see if the size
         if (numCapacity < rhs.size())
         {
             delete [] buffer;
             // set size and cap
             numElements = rhs.numElements;
-            numCapacity = rhs.numCapacity;
+            numCapacity = rhs.numElements;
             // allocate memory to new array
             buffer = new T[numCapacity];
+            
+            
+           // T* newBuffer = createBuffer(numCapacity)
+             
         }
-
+        
         // copy data
         for (int i = 0; i <= rhs.size(); i++)
         {
             buffer[i] = rhs.buffer[i];
         }
-
+        
         return *this;
     }
-
+    
     /*******************************************
-     * VECTOR :: Push
+     * STACK :: Push
      *******************************************/
     template <class T>
     void stack<T>::push(T t)
     {
-
         if (size() == capacity())
         {
-            if(capacity() == 0)
+            if (capacity() == 0)
             {
                 resize(1);
             }
             else
             {
-               resize(capacity() * 2);
+                resize(capacity() * 2);
             }
-            //int cap = numCapacity == 0 ? 1 : numCapacity * 2;
-            //resize(cap);
         }
-
+        
         buffer[numElements++] = t;
     }
-
+    
     /*******************************************
      * VECTOR :: Pop
      *******************************************/
@@ -248,30 +236,36 @@ public:
             --numElements;
         }
     }
-
+    
     /*******************************************
-     * VECTOR :: Top
-     *******************************************/
-    /*template <class T>
-    T stack<T>::top() throw(const char *)
-    {
-        if (!empty())
-        {
-            return buffer[size() - 1];
-        }
-        else
-            throw "ERROR";
-    }
-
-    /*******************************************
-     * VECTOR :: Top CONST
+     * STACK :: Top (setter)
      *******************************************/
     template <class T>
-    T &stack<T>::top() const
+    T& stack<T>::top() throw(const char *)
     {
-        return buffer[numCapacity];
+        if (empty())
+        {
+            throw "ERROR";
+        }
+        else
+            return buffer[size() - 1];
     }
-
-
+    
+    /*******************************************
+     * STACK :: Top (getter)
+     *******************************************/
+    template <class T>
+    T * stack<T>::top() const
+    {
+        if (buffer == NULL)
+        {
+            T * temp = NULL;
+            int i = 1;
+            temp = new T[i];
+            return temp[i];
+        }
+        else
+            return buffer[numElements - 1];
+    }
 }
 #endif /* stack_h */

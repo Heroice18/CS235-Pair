@@ -1,1 +1,249 @@
+/***********************************************************************
+* Header:
+*    Queue
+* Summary:
+*    Header file to the queue tests
+* Author
+*    Brandon Ison along with Brett Mills
+************************************************************************/
 
+
+
+#ifndef queue_h
+#define queue_h
+
+#include <cstddef>
+#include <iostream>
+
+#ifdef UNIT_TESTING
+int main(int argc, const char* argv[]);
+#endif
+
+namespace custom
+{
+   template <class T>
+   class queue
+   {
+      private:
+         int numCapacity;
+         int numPush;
+         int numPop;
+         T * buffer;
+
+
+      public:
+         queue();
+         queue(int numCapacity);
+         queue(const queue & rhs);
+         ~queue();
+
+         queue & operator = (const queue & rhs);
+         int  size()     const { return numPush - numPop; }
+         void clear()          { numPop = 0; numPush = 0; }
+         int capacity() const {return numCapacity;}
+         bool empty()    const
+         {
+             if (size() == 0)
+                 return true;
+             else
+                 return false;
+         }
+         void push(T t);
+         void pop();
+         T& front()throw(const char *);
+         T& back()throw(const char *);
+         T front() const;
+         T back() const;
+         void resize(int cap) throw (const char*);
+         int iHead(return numPop % numCapacity);
+         int iTail(return (numPush -1)% numCapacity);
+
+
+
+
+
+
+   };
+
+    template <class T>
+    void queue<T>::resize(int cap) throw (const char*)
+    {
+        if (cap >= 0)
+        {
+            T * temp = NULL;
+            try
+            {
+                if (cap > 0)
+                {
+                    temp = new T[cap];
+                }
+                if (cap < numPush)
+                {
+                    numPush = cap;
+                }
+                numCapacity = cap;
+                if (buffer != NULL && temp != NULL)
+                {
+                    for (int i = 0; i < cap; ++i)
+                    {
+                        temp[i] = buffer[i];
+                    }
+                    delete [] buffer;
+                }
+                buffer = temp;
+            }
+            catch (std::bad_alloc)
+            {
+                throw "ERROR: New cannot be created";
+            }
+        }
+    }
+
+    /*******************************************
+     * Queue :: DEFAULT CONSTRUCTOR
+     *******************************************/
+    template <class T>
+    queue<T>::queue()
+    {
+        buffer = NULL;
+        numPush = 0;
+        numPop = 0;
+        numCapacity = 0;
+    }
+
+/**********************************************
+     * Queue : NON-DEFAULT CONSTRUCTOR
+     * Preallocate the array to "capacity"
+     **********************************************/
+    template<class T>
+    queue<T>::queue(int numCapacity)
+    {
+        // do nothing if there is nothing to do.
+        if (numCapacity == 0)
+        {
+            //this->numCapacity = this->numElements = 0;
+            this->buffer = NULL;
+            return;
+        }
+
+        // attempt to allocate
+        try
+        {
+            buffer = new T[numCapacity];
+        }
+        catch (std::bad_alloc)
+        {
+            throw "ERROR: Unable to allocate buffer";
+        }
+
+
+        // copy over the stuff
+        this->numCapacity = numCapacity;
+       // this->numElements = 0;
+
+        for (int i = 0; i < numCapacity; i++)
+        {
+            buffer[i] = T();
+        }
+    }
+
+
+    /*******************************************
+     * Queue :: COPY CONSTRUCTOR
+     *******************************************/
+    template<class T>
+    queue<T>::queue(const queue & rhs)
+    {
+        // set to NULL to prevent assignment operator from deleting data
+        buffer = NULL;
+        // copy contents
+        *this = rhs;
+    }
+
+    /*******************************************
+     * STACK :: DESTRUCTOR
+     *******************************************/
+    template<class T>
+    queue<T>::~queue()
+    {
+        clear();
+    }
+
+/*******************************************
+     * Queue :: Assignment
+     *******************************************/
+    template <class T>
+    queue<T> & queue<T> :: operator = (const queue<T> &rhs)
+    {
+        // check if its the same thing
+        if (this == &rhs)
+        {
+            return *this;
+        }
+
+        // check to see if the size
+        if (numCapacity < rhs.size())
+        {
+            delete [] buffer;
+            // set size and cap
+           // numElements = rhs.numElements;
+            numCapacity = rhs.numCapacity;
+            // allocate memory to new array
+            buffer = new T[numCapacity];
+
+
+           // T* newBuffer = createBuffer(numCapacity)
+
+        }
+
+        // copy data
+        for (int i = 0; i <= rhs.size(); i++)
+        {
+            buffer[i] = rhs.buffer[i];
+        }
+
+        return *this;
+    }
+
+
+    /*******************************************
+     * VECTOR :: Push
+     *******************************************/
+    template <class T>
+    void queue<T>::push(T t)
+    {
+
+        if (size() == capacity())
+        {
+            if(capacity() == 0)
+            {
+                resize(1);
+            }
+            else
+            {
+               resize(capacity() * 2);
+            }
+            //int cap = numCapacity == 0 ? 1 : numCapacity * 2;
+            //resize(cap);
+        }
+
+        buffer[numCapacity++] = t;
+    }
+    /*******************************************
+     * VECTOR :: Pop
+     *******************************************/
+    template <class T>
+    void queue<T>::pop()
+    {
+        if (!empty())
+        {
+            --numCapacity;
+        }
+    }
+
+
+
+
+
+
+}

@@ -32,6 +32,9 @@ namespace custom
 
 
       public:
+         #ifdef UNIT_TESTING
+            friend int ::main(int argc, const char* argv[]);
+         #endif
          queue();
          queue(int numCapacity);
          queue(const queue & rhs);
@@ -52,11 +55,11 @@ namespace custom
          void pop();
          T& front()throw(const char *);
          T& back()throw(const char *);
-         T front() const;
-         T back() const;
+      //   T front();
+        // T back();
          void resize(int cap) throw (const char*);
-         int iHead(return numPop % numCapacity);
-         int iTail(return (numPush -1)% numCapacity);
+         int iHead() const {return numPop % numCapacity;}
+         int iTail()const {return (numPush -1)% numCapacity;}
 
 
 
@@ -77,20 +80,24 @@ namespace custom
                 {
                     temp = new T[cap];
                 }
-                if (cap < numPush)
+               /* if (cap < numPush)
                 {
                     numPush = cap;
-                }
-                numCapacity = cap;
+                }*/
+               //
                 if (buffer != NULL && temp != NULL)
                 {
-                    for (int i = 0; i < cap; ++i)
+                    for (int i = 0; i < size(); ++i)
                     {
-                        temp[i] = buffer[i];
+                        temp[i] = buffer[(iHead() + i % numCapacity)];
                     }
+
                     delete [] buffer;
                 }
+                numCapacity = cap;
                 buffer = temp;
+                numPush = size();
+                numPop = 0;
             }
             catch (std::bad_alloc)
             {
@@ -241,9 +248,36 @@ namespace custom
         }
     }
 
+    template <class T>
+    T &queue<T> :: front()   throw(const char *)
+    {
 
 
+    }
+
+   /* template <class T>
+    T queue<T> :: front() throw(const char *)
+    {
+
+
+    }
+*/
+    template <class T>
+    T &queue<T> :: back() throw(const char *)
+    {
+
+
+    }
+
+   /* template <class T>
+    T queue<T>::back()  throw(const char *)
+    {
+
+
+    }
+*/
 
 
 
 }
+#endif

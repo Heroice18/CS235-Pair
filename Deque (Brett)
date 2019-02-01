@@ -40,7 +40,7 @@ namespace custom
         #endif
         
         deque() { buffer = NULL, iFront = 0, iBack = -1, numCapacity = 0; }
-        deque(int numCapacity);
+        deque(int newCapacity);
         deque(const deque & rhs);
         ~deque() { clear(); }
         
@@ -71,14 +71,31 @@ namespace custom
     template <class T>
     deque<T>::deque(int newCapacity)
     {
-        // newCapacity keeps track of original numCapacity
-        newCapacity = numCapacity;
+        /*
+         // newCapacity keeps track of original numCapacity
+         newCapacity = numCapacity;
+         buffer = new T[newCapacity];
+         
+         if (buffer != NULL)
+         {
+         clear();
+         }
+         */
+        
+        // using rn
+        if (newCapacity < 0)
+        {
+            throw "Error: deque sizes must be greater than or equal to 0.";
+        }
+        numCapacity = newCapacity;
         buffer = new T[newCapacity];
         
         if (buffer != NULL)
         {
             clear();
         }
+        
+        
     }
     
     /*******************************************
@@ -87,7 +104,17 @@ namespace custom
     template <class T>
     deque<T>::deque(const deque & rhs)
     {
+        clear();
         
+        if (capacity() < rhs.size())
+        {
+            resize(rhs.size());
+        }
+        
+        for (int i = rhs.iFront; i <= rhs.iBack; i++)
+        {
+            push_back(rhs.buffer[iNormalize(i)]);
+        }
     }
     
     /*******************************************
@@ -96,7 +123,19 @@ namespace custom
     template <class T>
     deque<T>& deque<T>::operator=(const deque <T> &rhs)
     {
+        clear();
         
+        if (capacity() < rhs.size())
+        {
+            resize(rhs.size());
+        }
+        
+        for (int i = rhs.iFront; i <= rhs.iBack; i++)
+        {
+            push_back(rhs.buffer[iNormalize(i)]);
+        }
+        
+        return *this;
     }
     
     /*******************************************
@@ -105,9 +144,55 @@ namespace custom
     template <class T>
     void deque<T>::resize(int newCapacity)
     {
-        // negative or zero cap stuff
+        // declare new array
+        // copy everything over
+        // delete old array, reassign old array to new array
         
-        //
+        
+        if (newCapacity <= 0)
+        {
+            if (buffer != NULL)
+            {
+                delete [] buffer;
+                buffer = NULL;
+            }
+            numCapacity = 0;
+            iFront = 0;
+            iBack = -1;
+        }
+        else
+        {
+            int numItemsToCopy = 0;
+            if (newCapacity < capacity())
+            {
+                numItemsToCopy = newCapacity;
+            }
+            else
+            {
+               numItemsToCopy = size();
+            
+            }
+            //int numItemsToCopy = (newCapacity < capacity()) ? newCapacity : size();
+            // keeping track of items
+            int numItemsCopied = -1;
+            
+            // declare new array
+            T * newBuffer = new T[newCapacity];
+            
+            // copy everything over
+            for (int i = 0; i < numItemsToCopy; i++)
+            {
+                int normalizedIndex = iNormalize(iFront + i);
+                newBuffer[i] = buffer[normalizedIndex];
+                numItemsCopied++;
+            }
+            delete [] buffer;
+            buffer = newBuffer;
+            
+            iFront = 0;
+            iBack = numItemsCopied;
+            numCapacity = newCapacity;
+        }
     }
     
     /*******************************************
@@ -116,6 +201,41 @@ namespace custom
     template <class T>
     int deque<T>::iNormalize(int indexer) const
     {
+        //return (indexer >= 0) ? (indexer % numCapacity) :
+        //(numCapacity - ((-1 - indexer) % numCapacity) - 1);
+        
+        if (numCapacity == 0 && empty())
+        {
+            throw "Error: uninitialized deque.";
+        }
+        else
+        {
+            return (indexer >= 0) ? (indexer % numCapacity) :
+                (numCapacity - ((-1 - indexer) % numCapacity) -1);
+        }
+        
+         
+        // another method
+        /*
+         if (numCapacity != 0)
+         {
+            while (indexer < 0)
+            {
+                indexer += numCapacity;
+            }
+             
+             if (numCapacity != 0)
+             {
+                 return (indexer % numCapacity);
+             }
+             else
+             {
+                 return 0;
+             }
+         }
+        else
+            throw "ERROR";
+         */
         
     }
     
@@ -239,3 +359,4 @@ namespace custom
 }
 
 #endif /* deque_h */
+

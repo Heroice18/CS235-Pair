@@ -1,0 +1,368 @@
+/*******************************************
+  deque.h
+  Assignment 4
+  By Brandon Ison and Brett Mills
+*********************************************/
+
+#ifndef deque_h
+#define deque_h
+
+#include <cstddef>
+#include <iostream>
+#include <cassert>
+
+#ifdef UNIT_TESTING
+int main(int argc, const char* argv[]);
+#endif
+
+namespace custom
+{
+    template <class T>
+    class deque
+    {
+    private:
+        T * buffer;
+        int iFront;
+        int iBack;
+        int numCapacity;
+
+        void resize(int newCapacity); // change variable inside parameters
+
+        int iNormalize(int index) const;
+        int iFrontNormalize()       const { return iNormalize(iFront); }
+        int iBackNormalize()        const { return iNormalize(iBack);  }
+
+    public:
+        // for testing purposes (queue tests)
+        #ifdef UNIT_TESTING
+        friend int ::main(int argc, const char* argv[]);
+        #endif
+
+        deque()
+        {
+            buffer = NULL;
+            iFront = 0;
+            iBack = -1;
+            numCapacity = 0;
+        }
+        deque(int numCapacity) throw (const char *);
+        deque(const deque & rhs);
+        ~deque() { clear(); }
+
+        deque & operator = (const deque & rhs);
+
+        int size()     const { return iBack - iFront + 1; }
+        bool empty()   const { return size() == 0;}
+        int capacity() const { return numCapacity; }
+        void clear()         { iFront = 0, iBack = -1; }
+
+        void push_front(const T t);
+        void push_back (const T t);
+        void pop_front();
+        void pop_back() throw(const char *);
+
+        T & front()       throw(const char *); // might not need
+        T & front() const throw(const char *);
+
+        T & back()        throw(const char *); // might not need
+        T & back()  const throw(const char *);
+
+
+    };
+
+    /*******************************************
+     * DEQUE :: Non-Default Constructor
+     *******************************************/
+    template <class T>
+    deque<T>::deque(int newCapacity) throw (const char*)
+    {
+        // newCapacity keeps track of original numCapacity
+        if(newCapacity < 0)
+        {
+         throw "Error: deque sizes must be greater than or equal to 0.";
+        }
+        if(newCapacity > 0)
+        {
+           numCapacity = newCapacity;
+           buffer = new T[newCapacity];
+
+           if (buffer != NULL)
+           {
+               clear();
+           }
+        }
+
+    }
+
+    /*******************************************
+     * DEQUE :: Copy Constructor
+     *******************************************/
+    template <class T>
+    deque<T>::deque(const deque & rhs)
+    {
+
+        T * temp = NULL;
+        temp = new T[rhs.size()];
+
+
+        int j = 0;
+        for (int i = rhs.iFront; j < rhs.size(); i++, j++)
+        {
+            temp[j] = rhs.buffer[rhs.iNormalize(i)];
+
+            //push_back(rhs.buffer[iNormalize(i)]);
+        }
+        iFront = 0;
+        iBack = j -1;
+        numCapacity = rhs.size();
+        buffer = temp;
+
+    }
+
+    /*******************************************
+     * QUEUE :: Assignment
+     *******************************************/
+    template <class T>
+    deque<T>& deque<T>::operator=(const deque <T> &rhs)
+    {
+        clear();
+        if(buffer != NULL )
+        {
+            delete[] buffer;
+        }
+
+         buffer = new T[rhs.size()];
+
+
+        // copy data
+
+        for (int i = rhs.iFront; i <= rhs.iBack; i++)
+        {
+            push_back(rhs.buffer[iNormalize(i)]);
+            //iBack++;
+        }
+
+        return *this;
+
+
+    }
+
+    /*******************************************
+     * DEQUE :: Resize
+     *******************************************/
+    template <class T>
+    void deque<T>::resize(int cap)
+    {
+        // negative or zero cap stuff
+        if (cap > 0)
+        {
+            T * temp = NULL;
+            try
+            {
+                if (cap > 0)
+                {
+                    temp = new T[cap];
+                }
+
+                //int counter = 0;
+                //int toCopy = (cap < size() ? cap:size());
+
+               int numItemsToCopy = 0;
+               if (cap < capacity())
+               {
+                   numItemsToCopy = cap;
+               }
+               else
+               {
+                  numItemsToCopy = size();
+
+               }
+
+                int itemsCopied = -1;
+                if (buffer != NULL && temp != NULL)
+                {
+
+                    for (int i = 0; i < numItemsToCopy; ++i)
+                    {
+                           int index = iNormalize(iFront + i);
+                           temp[i] = buffer[index];
+                           itemsCopied++;
+                          // counter++;
+
+                    }
+
+                    delete [] buffer;
+                }
+
+                buffer = temp;
+                iFront = 0;
+                iBack = itemsCopied;
+                numCapacity = cap;
+
+
+            }
+            catch (std::bad_alloc)
+            {
+                throw "ERROR: New cannot be created";
+            }
+        }
+        else
+        {
+            if(buffer != NULL)
+            {
+            delete [] buffer;
+            buffer = NULL;
+            }
+            iFront = 0;
+            iBack = -1;
+            numCapacity = 0;
+        }
+    }
+
+    /*******************************************
+     * DEQUE :: iNormalize
+     *******************************************/
+    template <class T>
+    int deque<T>::iNormalize(int index) const
+    {
+
+         if(numCapacity == 0 && empty())
+         {
+               throw"Error: uninitialized deque.";
+         }
+         else
+         {
+            return (index >=0)?(index % numCapacity): (numCapacity - ((-1-index)% numCapacity) - 1);
+         }
+
+
+    }
+
+    /*******************************************
+     * DEQUE :: Front
+     *******************************************/
+    template <class T>
+    T & deque<T>::front() throw(const char *)
+    {
+        if (empty())
+        {
+            throw "Error: deque is empty.";
+        }
+        else
+        {
+            return buffer[iFrontNormalize()];
+        }
+    }
+
+    /*******************************************
+     * DEQUE :: Back
+     *******************************************/
+    template <class T>
+    T & deque<T>::back() throw(const char *)
+    {
+        if (empty())
+        {
+            throw "Error: deque is empty.";
+        }
+        else
+        {
+            return buffer[iBackNormalize()];
+        }
+    }
+
+    /*******************************************
+     * DEQUE :: push_front
+     *******************************************/
+    template <class T>
+    void deque<T>::push_front(const T t)
+    {
+        // the case where numCapacity == size(), resize
+        if (size() == capacity())
+        {
+            if (capacity() == 0)
+            {
+                // create just one slot
+                resize(1);
+            }
+            else
+            {
+                // in case the cap is maxed out double it
+                resize(capacity() * 2);
+            }
+            iFront--;
+            // load the data
+            buffer[iFrontNormalize()] = t;
+        }
+        // the case where numCapacity != size()
+        else
+        {
+            iFront--;
+            buffer[iFrontNormalize()] = t;
+        }
+    }
+
+    /*******************************************
+     * DEQUE :: push_back
+     *******************************************/
+    template <class T>
+    void deque<T>::push_back(const T t)
+    {
+        // the case where numCapacity == size(), resize
+        if (size() == capacity())
+        {
+            if (capacity() == 0)
+            {
+                // create just one slot
+                resize(1);
+            }
+            else
+            {
+                // in case the cap is maxed out double it
+                resize(capacity() * 2);
+            }
+            iBack++;
+            // load the data
+            buffer[iBackNormalize()] = t;
+        }
+        // the case where numCapacity != size()
+        else
+        {
+            iBack++;
+            buffer[iBackNormalize()] = t;
+        }
+    }
+
+    /*******************************************
+     * DEQUE :: pop_front
+     *******************************************/
+    template <class T>
+    void deque<T>::pop_front()
+    {
+        if (!empty())
+        {
+            iFront++;
+        }
+         else
+        {
+            throw"Error: Can not pop an empty deque.";
+        }
+    }
+
+    /*******************************************
+     * DEQUE :: pop_back
+     *******************************************/
+    template <class T>
+    void deque<T>::pop_back() throw(const char *)
+    {
+        if (!empty())
+        {
+            iBack--;
+        }
+        else
+        {
+            throw"Error: Can not pop an empty deque.";
+        }
+    }
+}
+
+#endif /* deque_h */

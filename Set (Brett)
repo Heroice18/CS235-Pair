@@ -1,0 +1,323 @@
+//
+//  set.h
+//  Assignment 5
+//
+//  Created by Brett Mills on 2/3/19.
+//  Copyright © 2019 Brett Mills. All rights reserved.
+//
+
+#ifndef set_h
+#define set_h
+
+#include <cstddef>
+#include <iostream>
+
+#ifdef UNIT_TESTING
+int main(int argc, const char* argv[]);
+#endif
+
+namespace custom
+{
+    template <class T>
+    class set
+    {
+    private:
+        T * buffer;
+        int numElements;
+        int numCapacity;
+        
+        int  findIndex(const T & t);
+        void resize(int newCapacity);
+        
+    public:
+        // for testing purposes (queue tests)
+        #ifdef UNIT_TESTING
+        friend int ::main(int argc, const char* argv[]);
+        #endif
+        
+        // define nested iterator class
+        // need a const iterator
+        class iterator;
+        
+        set()  { buffer = NULL, numElements = 0, numCapacity = 0; }
+        set(int newCapacity);
+        set(const set & rhs);
+        ~set() { clear(); }
+        
+        set & operator = (const set & rhs);
+        
+        int  size()  { return numCapacity; }
+        bool empty() { return numElements == 0; }
+        void clear() { numElements = 0; }
+        
+        // set specific functions
+        iterator erase(iterator it);
+        iterator find(T t);
+        void insert(T t);
+        
+        set & operator || (const set & rhs);
+        set & operator && (const set & rhs);
+        set & operator -  (const set & rhs);
+        
+        iterator begin();
+        iterator end();
+        
+    };
+    
+    /*******************************************
+     * SET :: Iterator Class
+     *******************************************/
+    template <class T>
+    class set<T>::iterator
+    {
+    private:
+        T * p;
+        
+    public:
+        // constructors, destructors, and assignment operator
+        iterator()      : p(NULL)      {              }
+        iterator(T * p) : p(p)         {              }
+        iterator(const iterator & rhs) { *this = rhs; }
+        iterator & operator = (const iterator & rhs)
+        {
+            this->p = rhs.p;
+            return *this;
+        }
+        // equals, not equals operator
+        bool operator != (const iterator & rhs) const { return rhs.p != this->p; }
+        bool operator == (const iterator & rhs) const { return rhs.p == this->p; }
+
+        // prefix increment
+        iterator & operator ++ ()
+        {
+            p++;
+            return *this;
+        }
+        // postfix increment
+        iterator operator ++ (int postfix)
+        {
+            iterator tmp(*this);
+            p++;
+            return tmp;
+        }
+        // prefix decrement
+        iterator & operator -- ()
+        {
+            p--;
+            return *this;
+        }
+        // postfix decrement
+        iterator operator -- (int postfix)
+        {
+            iterator tmp(*this);
+            p--;
+            return tmp;
+        }
+        
+    };
+    
+    /*******************************************
+     * SET :: Non-Default Constructor
+     *******************************************/
+    template <class T>
+    set<T>::set(int newCapacity)
+    {
+        // if newCapacity == 0
+        if (newCapacity == 0)
+        {
+            // put a throw error
+        }
+        
+        // allocate
+        try
+        {
+            buffer = new T[newCapacity];
+        }
+        catch (std::bad_alloc)
+        {
+            throw "ERROR";
+        }
+        
+        // assign values
+        numCapacity = newCapacity;
+        if (buffer != NULL)
+        {
+            clear();
+        }
+    }
+    
+    /*******************************************
+     * SET :: Copy Constructor
+     *******************************************/
+    template <class T>
+    set<T>::set(const set & rhs)
+    {
+        
+    }
+    
+    /*******************************************
+     * SET :: Assignment Operator
+     *******************************************/
+    template <class T>
+    set<T>& set<T>::operator=(const set <T> &rhs)
+    {
+        
+    }
+    
+    /*******************************************
+     * SET :: Union Operator
+     *******************************************/
+    template <class T>
+    set<T>& set<T>::operator||(const set <T> &rhs)
+    {
+        int iLhs = 0;
+        int iRhs = 0;
+        
+        while (iLhs < numElements || iRhs < rhs.numElements)
+        {
+            if (iLhs == numElements)
+            {
+                
+            }
+        }
+    }
+    
+    /*******************************************
+     * SET :: Intersection Operator
+     *******************************************/
+    template <class T>
+    set<T>& set<T>::operator&&(const set <T> &rhs)
+    {
+        
+    }
+    
+    /*******************************************
+     * SET :: Difference Operator
+     *******************************************/
+    template <class T>
+    set<T>& set<T>::operator-(const set <T> &rhs)
+    {
+        
+    }
+    
+    /*******************************************
+     * SET :: Find Index
+     *******************************************/
+    template <class T>
+    int set<T>::findIndex(const T & t)
+    {
+        int iBegin = 0;
+        int iEnd = numElements - 1;
+        
+        while (iBegin <= iEnd)
+        {
+            int iMiddle = (iBegin + iEnd) / 2;
+            if (t == buffer[iMiddle])
+            {
+                return iMiddle;
+            }
+            if (t < buffer[iMiddle])
+            {
+                iEnd = iMiddle - 1;
+            }
+            else
+            {
+                iBegin = iMiddle + 1;
+            }
+        }
+        return numElements;
+    }
+    
+    /*******************************************
+     * SET :: Find (Iterator)
+     *******************************************/
+    template <class T>
+    typename set<T>::iterator set<T>::find(T t)
+    {
+        int iFind = findIndex(t);
+        
+        if (iFind >= 0)
+        {
+            // return what?
+            return ;
+        }
+        else
+        {
+            return end();
+        }
+    }
+    
+    /*******************************************
+     * SET :: Insert
+     *******************************************/
+    template <class T>
+    void set<T>::insert(T t)
+    {
+        // find location where to insert
+        int iInsert = findIndex(t);
+        
+        if(buffer[iInsert] != t)
+        {
+            // shift elements
+            for (int i = numElements; i < iInsert; i--)
+            {
+                buffer[i + 1] = buffer[i];
+            }
+            buffer[iInsert] = t;
+            numElements++;
+        }
+    }
+    
+    /*******************************************
+     * SET :: Erase
+     *******************************************/
+    template <class T>
+    typename set<T> :: iterator set<T> :: erase(iterator it)
+    {
+        int iErase = findIndex(*it);
+        if (iErase == 0)
+        {
+            return;
+        }
+        if (buffer[iErase] == it)
+        {
+            for (int i = iErase; i < numElements; i++)
+            {
+                buffer[i] = buffer[i + 1];
+            }
+            numElements--;
+        }
+        return;
+    }
+    
+    /*******************************************
+     * SET :: Begin (Iterator)
+     *******************************************/
+    template <class T>
+    typename set<T> :: iterator set<T> :: begin()
+    {
+        
+    }
+    
+    /*******************************************
+     * SET :: End (Iterator)
+     *******************************************/
+    template <class T>
+    typename set<T> :: iterator set<T> :: end()
+    {
+        
+    }
+    
+    /*******************************************
+     * SET :: Resize
+     *******************************************/
+    template <class T>
+    void set<T>::resize(int newCapacity)
+    {
+        
+    }
+    
+}
+
+#endif /* set_h */
+

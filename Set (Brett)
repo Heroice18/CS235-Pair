@@ -12,12 +12,18 @@
 #include <cstddef>
 #include <iostream>
 
+using namespace std;
+
 #ifdef UNIT_TESTING
 int main(int argc, const char* argv[]);
 #endif
 
+
 namespace custom
 {
+    template <class T>
+    class iterator;
+    
     template <class T>
     class set
     {
@@ -26,7 +32,7 @@ namespace custom
         int numElements;
         int numCapacity;
         
-        int  findIndex(const T & t);
+        int  findIndex(const T & t) const;
         void resize(int newCapacity);
         
     public:
@@ -35,32 +41,33 @@ namespace custom
         friend int ::main(int argc, const char* argv[]);
         #endif
         
-        // define nested iterator class
-        // need a const iterator
-        class iterator;
+        //class iterator;
         
         set()  { buffer = NULL, numElements = 0, numCapacity = 0; }
         set(int newCapacity);
         set(const set & rhs);
         ~set() { clear(); }
         
-        set & operator = (const set & rhs);
         
-        int  size()  { return numCapacity; }
-        bool empty() { return numElements == 0; }
-        void clear() { numElements = 0; }
+        int  size()     const { return numElements; }
+        int  capacity() const { return numCapacity; }
+        bool empty()    const { return numElements == 0; }
+        void clear()          { numElements = 0; }
         
         // set specific functions
-        iterator erase(iterator it);
-        iterator find(T t);
-        void insert(T t);
+        void erase(iterator <T> & it);
+        void insert(const T t);
+        iterator <T> find(const T &t);
+        iterator <T> begin();
+        iterator <T> end();
         
-        set & operator || (const set & rhs);
-        set & operator && (const set & rhs);
-        set & operator -  (const set & rhs);
+        // operators
+        set <T> & operator =  (const set & rhs);
+        set <T>   operator || (const set & rhs);
+        set <T>   operator && (const set & rhs);
+        set <T>   operator -  (const set & rhs);
         
-        iterator begin();
-        iterator end();
+      
         
     };
     
@@ -68,7 +75,7 @@ namespace custom
      * SET :: Iterator Class
      *******************************************/
     template <class T>
-    class set<T>::iterator
+    class iterator
     {
     private:
         T * p;
@@ -127,7 +134,7 @@ namespace custom
         {
             // put a throw error
         }
-        
+
         // allocate
         try
         {
@@ -135,9 +142,9 @@ namespace custom
         }
         catch (std::bad_alloc)
         {
-            throw "ERROR";
+            throw "Error: set sizes must be greater than or equal to 0.";
         }
-        
+
         // assign values
         numCapacity = newCapacity;
         if (buffer != NULL)
@@ -152,7 +159,36 @@ namespace custom
     template <class T>
     set<T>::set(const set & rhs)
     {
+        // if no capacity, do nothing
+        if (rhs.numCapacity == 0)
+        {
+            numCapacity = 0;
+            numElements = 0;
+            buffer = NULL;
+            return;
+        }
         
+        try
+        {
+            buffer = new T[rhs.numCapacity];
+        }
+        catch (std::bad_alloc)
+        {
+            throw "error";
+        }
+        
+        numCapacity = rhs.numCapacity;
+        numElements = rhs.numElements;
+        
+        for (int i = 0; i < numElements; i++)
+        {
+            buffer[i] = rhs.buffer[i];
+        }
+        
+        for (int i = numElements; i < numCapacity; i++)
+        {
+            buffer[i] = T();
+        }
     }
     
     /*******************************************
@@ -161,57 +197,93 @@ namespace custom
     template <class T>
     set<T>& set<T>::operator=(const set <T> &rhs)
     {
+        // do nothing if rhs is empty
+        if (rhs.numCapacity == 0)
+        {
+            numCapacity = 0;
+            numElements = 0;
+        }
         
+        // delete existing data, if any
+        if (numCapacity)
+        {
+            delete [] buffer;
+        }
+        
+        try
+        {
+            buffer = new T[rhs.numCapacity];
+            numElements = rhs.numElements;
+            numCapacity = rhs.numCapacity;
+        }
+        catch (std::bad_alloc)
+        {
+            throw "Error";
+        }
+        
+        // copy the items over one at a time
+        for (int i = numElements; i < numCapacity; i++)
+        {
+            buffer[i] = T();
+        }
+        
+        return *this;
     }
     
     /*******************************************
      * SET :: Union Operator
      *******************************************/
     template <class T>
-    set<T>& set<T>::operator||(const set <T> &rhs)
+    set<T> set<T>::operator||(const set <T> &rhs)
     {
-        int iLhs = 0;
-        int iRhs = 0;
-        
-        while (iLhs < numElements || iRhs < rhs.numElements)
-        {
-            if (iLhs == numElements)
-            {
-                
-            }
-        }
+//        int iLhs = 0;
+//        int iRhs = 0;
+//
+//        // needs 3rd variable "setReturn"
+//
+//        while (iLhs < numElements || iRhs < rhs.numElements)
+//        {
+//            if (iLhs == numElements)
+//            {
+//
+//            }
+//        }
+        return *this;
     }
     
     /*******************************************
      * SET :: Intersection Operator
      *******************************************/
     template <class T>
-    set<T>& set<T>::operator&&(const set <T> &rhs)
+    set<T> set<T>::operator&&(const set <T> &rhs)
     {
-        
+        return *this;
     }
     
     /*******************************************
      * SET :: Difference Operator
      *******************************************/
     template <class T>
-    set<T>& set<T>::operator-(const set <T> &rhs)
+    set<T> set<T>::operator-(const set <T> &rhs)
     {
-        
+        return *this;
     }
     
     /*******************************************
      * SET :: Find Index
+     *        (binary search algorithm)
      *******************************************/
     template <class T>
-    int set<T>::findIndex(const T & t)
+    int set<T>::findIndex(const T & t) const
     {
+        cout << "numElements at the beginnning of findIndex: " << numElements << endl;
         int iBegin = 0;
         int iEnd = numElements - 1;
+        int iMiddle = 0;
         
         while (iBegin <= iEnd)
         {
-            int iMiddle = (iBegin + iEnd) / 2;
+            iMiddle = (iBegin + iEnd) / 2;
             if (t == buffer[iMiddle])
             {
                 return iMiddle;
@@ -225,6 +297,7 @@ namespace custom
                 iBegin = iMiddle + 1;
             }
         }
+        cout << "this is numElements in findIndex: " << numElements << endl;
         return numElements;
     }
     
@@ -232,36 +305,46 @@ namespace custom
      * SET :: Find (Iterator)
      *******************************************/
     template <class T>
-    typename set<T>::iterator set<T>::find(T t)
+    iterator<T> set<T>::find(const T & t)
     {
+
         int iFind = findIndex(t);
-        
+
         if (iFind >= 0)
         {
-            // return what?
-            return ;
+            return iterator <T>(buffer + 1);
         }
         else
         {
             return end();
         }
+
     }
     
     /*******************************************
      * SET :: Insert
      *******************************************/
     template <class T>
-    void set<T>::insert(T t)
+    void set<T>::insert(const T t)
     {
+
         // find location where to insert
         int iInsert = findIndex(t);
+        //cout << "this is iINsert " << iInsert << endl;
         
+        // resize if full
+        if (size() == capacity())
+        {
+            resize(numCapacity);
+        }
+
+        cout << "this is value of iInsert: " << iInsert << endl;
         if(buffer[iInsert] != t)
         {
             // shift elements
             for (int i = numElements; i < iInsert; i--)
             {
-                buffer[i + 1] = buffer[i];
+                buffer[i] = buffer[i + 1];
             }
             buffer[iInsert] = t;
             numElements++;
@@ -272,40 +355,42 @@ namespace custom
      * SET :: Erase
      *******************************************/
     template <class T>
-    typename set<T> :: iterator set<T> :: erase(iterator it)
+    void set<T>::erase(iterator <T> & it)
     {
-        int iErase = findIndex(*it);
-        if (iErase == 0)
-        {
-            return;
-        }
-        if (buffer[iErase] == it)
-        {
-            for (int i = iErase; i < numElements; i++)
-            {
-                buffer[i] = buffer[i + 1];
-            }
-            numElements--;
-        }
-        return;
+//
+//        int iErase = findIndex(*it);
+//        if (iErase == 0)
+//        {
+//            return;
+//        }
+//        if (buffer[iErase] == it)
+//        {
+//            for (int i = iErase; i < numElements; i++)
+//            {
+//                buffer[i] = buffer[i + 1];
+//            }
+//            numElements--;
+//        }
+//        return;
     }
     
     /*******************************************
      * SET :: Begin (Iterator)
      *******************************************/
     template <class T>
-    typename set<T> :: iterator set<T> :: begin()
+    iterator<T> set<T>::begin()
     {
-        
+        return iterator<T>(buffer);
+
     }
     
     /*******************************************
      * SET :: End (Iterator)
      *******************************************/
     template <class T>
-    typename set<T> :: iterator set<T> :: end()
+    iterator<T> set<T>::end()
     {
-        
+        return iterator <T>(buffer + numElements);
     }
     
     /*******************************************
@@ -314,10 +399,21 @@ namespace custom
     template <class T>
     void set<T>::resize(int newCapacity)
     {
+        int oldSize = newCapacity;
         
+        newCapacity *= 2;
+        T* newSet = new T[newCapacity];
+        
+        for (int i = 0; i < oldSize; i++)
+        {
+            newSet[i] = buffer[i];
+        }
+        delete [] buffer;
+        buffer = newSet;
     }
     
 }
 
 #endif /* set_h */
+
 

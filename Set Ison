@@ -1,0 +1,470 @@
+#ifndef set_h
+#define set_h
+
+#include <cstddef>
+#include <iostream>
+
+using namespace std;
+
+#ifdef UNIT_TESTING
+int main(int argc, const char* argv[]);
+#endif
+
+
+namespace custom
+{
+
+
+    template <class T>
+    class set
+    {
+    private:
+        T * buffer;
+        int numElements;
+        int numCapacity;
+
+        int  findIndex(const T & t) const;
+        void resize(int newCapacity);
+
+    public:
+        // for testing purposes (queue tests)
+        #ifdef UNIT_TESTING
+        friend int ::main(int argc, const char* argv[]);
+        #endif
+
+
+        class iterator;
+        set()  { buffer = NULL, numElements = 0, numCapacity = 0; }
+        set(int newCapacity);
+        set(const set & rhs);
+        ~set() { clear(); }
+
+
+        int  size()     const { return numElements; }
+        int  capacity() const { return numCapacity; }
+        bool empty()    const { return numElements == 0; }
+        void clear()          { numElements = 0; }
+
+        // set specific functions
+        void erase(iterator  & it);
+        void insert(const T t);
+
+
+        iterator find(const T &t);
+        iterator begin();
+        iterator end();
+
+        // operators
+        set <T> & operator =  (const set & rhs);
+        set <T>   operator || (const set & rhs);
+        set <T>   operator && (const set & rhs);
+        set <T>   operator -  (const set & rhs);
+
+      class iterator
+      {
+    private:
+        T * ptr;
+
+    public:
+      // for testing purposes (queue tests)
+        #ifdef UNIT_TESTING
+        friend int ::main(int argc, const char* argv[]);
+        #endif
+        // constructors, destructors, and assignment operator
+        iterator()      : ptr(NULL)      {              }
+        iterator(T * ptr) : ptr(ptr)         {              }
+        iterator(const iterator & rhs) { *this = rhs; }
+        iterator & operator = (const iterator & rhs)
+        {
+            this->ptr = rhs.ptr;
+            return *this;
+        }
+        // equals, not equals operator
+        bool operator != (const iterator & rhs) const { return rhs.ptr != this->ptr; }
+        bool operator == (const iterator & rhs) const { return rhs.ptr == this->ptr; }
+        T & operator * ()       { return *ptr; }
+        const T & operator * () const { return *ptr; }
+        // prefix increment
+        iterator & operator ++ ()
+        {
+            ptr++;
+            return *this;
+        }
+        // postfix increment
+        iterator operator ++ (int postfix)
+        {
+            iterator tmp(*this);
+            ptr++;
+            return tmp;
+        }
+        // prefix decrement
+        iterator & operator -- ()
+        {
+            ptr--;
+            return *this;
+        }
+        // postfix decrement
+        iterator operator -- (int postfix)
+        {
+            iterator tmp(*this);
+            ptr--;
+            return tmp;
+        }
+
+    };
+
+    };
+
+
+
+    /*******************************************
+     * SET :: Non-Default Constructor
+     *******************************************/
+    template <class T>
+    set<T>::set(int newCapacity)
+    {
+        // if newCapacity == 0
+        if (newCapacity == 0)
+        {
+            // put a throw error
+        }
+
+        // allocate
+        try
+        {
+            buffer = new T[newCapacity];
+        }
+        catch (std::bad_alloc)
+        {
+            throw "Error: set sizes must be greater than or equal to 0.";
+        }
+
+        // assign values
+        numCapacity = newCapacity;
+        if (buffer != NULL)
+        {
+            clear();
+        }
+    }
+
+    /*******************************************
+     * SET :: Copy Constructor
+     *******************************************/
+    template <class T>
+    set<T>::set(const set & rhs)
+    {
+        // if no capacity, do nothing
+        if (rhs.numCapacity == 0)
+        {
+            numCapacity = 0;
+            numElements = 0;
+            buffer = NULL;
+            return;
+        }
+
+        try
+        {
+            buffer = new T[rhs.numCapacity];
+        }
+        catch (std::bad_alloc)
+        {
+            throw "error";
+        }
+
+        numCapacity = rhs.numCapacity;
+        numElements = rhs.numElements;
+
+        for (int i = 0; i < numElements; i++)
+        {
+            buffer[i] = rhs.buffer[i];
+        }
+
+        for (int i = numElements; i < numCapacity; i++)
+        {
+            buffer[i] = T();
+        }
+    }
+
+    /*******************************************
+     * SET :: Assignment Operator
+     *******************************************/
+    template <class T>
+    set<T>& set<T>::operator=(const set <T> &rhs)
+    {
+        // do nothing if rhs is empty
+        if (rhs.numCapacity == 0)
+        {
+            numCapacity = 0;
+            numElements = 0;
+        }
+
+        // delete existing data, if any
+        if (numCapacity)
+        {
+            delete [] buffer;
+        }
+
+        try
+        {
+            buffer = new T[rhs.numCapacity];
+            numElements = rhs.numElements;
+            numCapacity = rhs.numCapacity;
+        }
+        catch (std::bad_alloc)
+        {
+            throw "Error";
+        }
+
+        // copy the items over one at a time
+        for (int i = numElements; i < numCapacity; i++)
+        {
+            buffer[i] = T();
+        }
+
+        return *this;
+    }
+
+    /*******************************************
+     * SET :: Union Operator
+     *******************************************/
+    template <class T>
+    set<T> set<T>::operator||(const set <T> &rhs)
+    {
+       //Create a set wich will be returned to ensure constance of lhs and rhs
+      set<T>setReturn;
+      //if there is nothing to union, end here
+      if((rhs.numCapacity == 0) && (numCapacity == 0))
+            return setReturn;
+      //create a buffer to store unions in to help minimize memory size of seReturn *required for unit test
+      T * unionBuffer = new T[rhs.numCapacity+numCapacity];
+      int unionElements = 0;
+      int iLhs = 0;
+      int iRhs = 0;
+      for(int i = 0;(iLhs < numElements) || (iRhs < rhs.numElements); i++)
+      {
+            //If you have reached the end of lhs, loop through and add the rest of rhs
+            if(iLhs == numElements)
+            {
+                  unionBuffer[unionElements] = rhs.buffer[iRhs];
+                  unionElements++;
+                  iRhs++;
+            }
+            //If you have reached the end of lhs, loop through and add the rest of lhs
+            else if(iRhs == rhs.numElements)
+            {
+                  unionBuffer[unionElements] = buffer[iLhs];
+                  unionElements++;
+                  iLhs++;
+            }
+            //If the value in lhs is also in rhs, add it once and itterate both sets
+            else if(buffer[iLhs] == rhs.buffer[iRhs])
+            {
+                  unionBuffer[unionElements] = buffer[iLhs];
+                  unionElements++;
+                  iRhs++;
+                  iLhs++;
+            }
+            //If the value in rhs is smaller than that in lhs, add it to the buffer and itterate rhs
+            else if(buffer[iLhs] > rhs.buffer[iRhs])
+            {
+                  unionBuffer[unionElements] = rhs.buffer[iRhs];
+                  unionElements++;
+                  iRhs++;
+            }
+            //If the value in lhs is smaller than that in rhs, add it to the buffer and itterate lhs
+            else if(buffer[iLhs] < rhs.buffer[iRhs])
+            {
+                  unionBuffer[unionElements] = buffer[iLhs];
+                  unionElements++;
+                  iLhs++;
+            }
+      }
+      if (unionElements == 0)
+      {
+            //If there is nothing in the union, end here
+            return setReturn;
+      }
+      //Put the buffer into setReturn, with minimum memory size.
+      setReturn.numCapacity = unionElements;
+      setReturn.numElements = unionElements;
+      T *returnBuffer = new T[unionElements];
+      for (int i = 0; i < unionElements; i++)
+            returnBuffer[i] = unionBuffer[i];
+      setReturn.buffer = returnBuffer;
+      return setReturn;
+    }
+
+    /*******************************************
+     * SET :: Intersection Operator
+     *******************************************/
+    template <class T>
+    set<T> set<T>::operator&&(const set <T> &rhs)
+    {
+        return *this;
+    }
+
+    /*******************************************
+     * SET :: Difference Operator
+     *******************************************/
+    template <class T>
+    set<T> set<T>::operator-(const set <T> &rhs)
+    {
+        return *this;
+    }
+
+    /*******************************************
+     * SET :: Find Index
+     *        (binary search algorithm)
+     *******************************************/
+    template <class T>
+    int set<T>::findIndex(const T & t) const
+    {
+        cout << "numElements at the beginnning of findIndex: " << numElements << endl;
+        int iBegin = 0;
+        int iEnd = numElements - 1;
+        int iMiddle = 0;
+
+        while (iBegin <= iEnd)
+        {
+            iMiddle = (iBegin + iEnd) / 2;
+            if (t == buffer[iMiddle])
+            {
+                return iMiddle;
+            }
+            if (t < buffer[iMiddle])
+            {
+                iEnd = iMiddle - 1;
+            }
+            else
+            {
+                iBegin = iMiddle + 1;
+            }
+        }
+        cout << "this is numElements in findIndex: " << numElements << endl;
+        return numElements;
+    }
+
+    /*******************************************
+     * SET :: Find (Iterator)
+     *******************************************/
+    template <class T>
+    typename set<T> :: iterator set<T> ::find(const T & t)
+    {
+
+        int iFind = findIndex(t);
+
+        return iterator (buffer[iFind]);
+
+    }
+
+    /*******************************************
+     * SET :: Insert
+     *******************************************/
+    template <class T>
+    void set<T>::insert(const T t)
+    {
+
+        // find location where to insert
+        int iInsert = findIndex(t);
+        //cout << "this is iINsert " << iInsert << endl;
+
+        // resize if full
+        if (size() == capacity())
+        {
+            resize(numCapacity);
+        }
+
+        cout << "this is value of iInsert: " << iInsert << endl;
+
+
+        if(iInsert == numElements)
+        {
+         cout << "HI";
+        // duplicates?
+
+            // shift elements
+
+
+        int count = 0;
+        while(t > buffer[count] && count < numElements)
+        {
+         count++;
+        }
+       for (int i = numElements - 1; i >= count; i--)
+      {
+         buffer[i + 1] = buffer[i];
+
+      }
+        buffer[count] = t;
+
+            numElements++;
+
+          //  numElements++;
+
+     }
+    }
+
+    /*******************************************
+     * SET :: Erase
+     *******************************************/
+    template <class T>
+    void set<T>::erase(iterator & it)
+    {
+//
+//        int iErase = findIndex(*it);
+//        if (iErase == 0)
+//        {
+//            return;
+//        }
+//        if (buffer[iErase] == it)
+//        {
+//            for (int i = iErase; i < numElements; i++)
+//            {
+//                buffer[i] = buffer[i + 1];
+//            }
+//            numElements--;
+//        }
+//        return;
+    }
+
+    /*******************************************
+     * SET :: Begin (Iterator)
+     *******************************************/
+    template <class T>
+    typename set<T> :: iterator set<T>::begin()
+    {
+        //return iterator<T>(buffer);
+
+    }
+
+    /*******************************************
+     * SET :: End (Iterator)
+     *******************************************/
+    template <class T>
+    typename set<T> :: iterator set<T>::end()
+    {
+        return iterator (buffer + numElements);
+    }
+
+    /*******************************************
+     * SET :: Resize
+     *******************************************/
+    template <class T>
+    void set<T>::resize(int newCapacity)
+    {
+        int oldSize = newCapacity;
+
+        newCapacity *= 2;
+        T* newSet = new T[newCapacity];
+
+        for (int i = 0; i < oldSize; i++)
+        {
+            newSet[i] = buffer[i];
+        }
+        delete [] buffer;
+        buffer = newSet;
+    }
+
+}
+
+#endif /* set_h */

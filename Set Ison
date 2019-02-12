@@ -151,7 +151,7 @@ namespace custom
      * SET :: Copy Constructor
      *******************************************/
     template <class T>
-    set<T>::set(const set & rhs)
+    set<T> ::set(const set <T> & rhs)
     {
         // if no capacity, do nothing
         if (rhs.numCapacity == 0)
@@ -168,7 +168,7 @@ namespace custom
         }
         catch (std::bad_alloc)
         {
-            throw "error";
+            throw "ERROR: Unable to allocate a new buffer for Set";
         }
 
         numCapacity = rhs.numCapacity;
@@ -192,6 +192,24 @@ namespace custom
     set<T>& set<T>::operator=(const set <T> &rhs)
     {
         // do nothing if rhs is empty
+      /*  if(rhs.size() == 0)
+        {
+          numCapacity = 0;
+          numElements = 0;
+          buffer = NULL;
+
+        }
+
+
+        numElements = rhs.size();
+        numCapacity = rhs.capacity();
+
+        for (int i = 0; i < numCapacity; i++)
+        {
+          buffer[i] = rhs.buffer[i];
+        }
+        return *this;
+*/
         if (rhs.numCapacity == 0)
         {
             numCapacity = 0;
@@ -300,7 +318,59 @@ namespace custom
     template <class T>
     set<T> set<T>::operator&&(const set <T> &rhs)
     {
-        return *this;
+        set<T> check;
+        int right = 0;
+        int left = 0;
+
+        while(right < numElements || left < rhs.numElements)
+        {
+          if(right == numElements)
+          {
+            return check;
+          }
+          else if(left == numElements)
+          {
+            return check;
+          }
+          else if(buffer[right] == rhs.buffer[left])
+          {
+            check.insert(buffer[right]);
+            right++;
+            left++;
+          }
+          else if(buffer[right] < buffer[left])
+          {
+            right++;
+          }
+          else if(buffer[right] > buffer[left])
+          {
+            left++;
+          }
+
+        }
+
+
+       /* while (right <= rhs.numElements)
+        {
+          if(buffer[left] > rhs.buffer[right])
+          {
+            ++right;
+          }
+          else if(buffer[left] < rhs.buffer[right])
+          {
+            ++left;
+          }
+          else if(buffer[left] == rhs.buffer[right])
+          {
+            check.insert(buffer[left]);
+            ++left;
+            ++right;
+          }
+
+        }*/
+        return check;
+
+       // return *this;
     }
 
     /*******************************************
@@ -309,7 +379,28 @@ namespace custom
     template <class T>
     set<T> set<T>::operator-(const set <T> &rhs)
     {
+       // numCapacity =  rhs.numCapacity - numCapacity;
+      if(buffer != NULL)
+        {
+          set<T> check;
+          int count;
+          for(int i = 0; i < rhs.numElements; i++)
+          {
+            for(int j = 0; i < numElements; j++)
+            {
+              if(buffer[j] == rhs.buffer[i])
+              {
+                  count ++;
+              }
+            }
+          }
+
+          return *this;
+        }
+        else
+        {
         return *this;
+        }
     }
 
     /*******************************************
@@ -319,28 +410,32 @@ namespace custom
     template <class T>
     int set<T>::findIndex(const T & t) const
     {
-        cout << "numElements at the beginnning of findIndex: " << numElements << endl;
+        //cout << "numElements at the beginnning of findIndex: " << numElements << endl;
         int iBegin = 0;
         int iEnd = numElements - 1;
-        int iMiddle = 0;
+       // int iMiddle = 0;
 
         while (iBegin <= iEnd)
         {
-            iMiddle = (iBegin + iEnd) / 2;
+            int iMiddle = (iBegin + iEnd) / 2;
+            //cout << iMiddle;
             if (t == buffer[iMiddle])
             {
+               cout << "A";
                 return iMiddle;
             }
             if (t < buffer[iMiddle])
             {
+               cout << "B";
                 iEnd = iMiddle - 1;
             }
             else
             {
+               cout <<"C";
                 iBegin = iMiddle + 1;
             }
         }
-        cout << "this is numElements in findIndex: " << numElements << endl;
+        //cout << "this is numElements in findIndex: " << numElements << endl;
         return numElements;
     }
 
@@ -353,7 +448,11 @@ namespace custom
 
         int iFind = findIndex(t);
 
-        return iterator (buffer[iFind]);
+        if(buffer[iFind] == t)
+        {
+          //return iterator (buffer + iFind);
+        }
+       // return iterator (buffer + iFind);
 
     }
 
@@ -378,30 +477,20 @@ namespace custom
 
 
         if(iInsert == numElements)
-        {
-         cout << "HI";
-        // duplicates?
+         {
+           int count = 0;
+           while(t > buffer[count] && count < numElements)
+           {
+            count++;
+           }
+          for (int i = numElements - 1; i >= count; i--)
+            {
+               buffer[i + 1] = buffer[i];
+            }
+           buffer[count] = t;
 
-            // shift elements
-
-
-        int count = 0;
-        while(t > buffer[count] && count < numElements)
-        {
-         count++;
-        }
-       for (int i = numElements - 1; i >= count; i--)
-      {
-         buffer[i + 1] = buffer[i];
-
-      }
-        buffer[count] = t;
-
-            numElements++;
-
-          //  numElements++;
-
-     }
+               numElements++;
+           }
     }
 
     /*******************************************
@@ -468,3 +557,4 @@ namespace custom
 }
 
 #endif /* set_h */
+

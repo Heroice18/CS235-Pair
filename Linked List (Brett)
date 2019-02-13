@@ -1,0 +1,163 @@
+//
+//  linked_list.h
+//  Assignment 6
+//
+//  Created by Brett Mills on 2/11/19.
+//  Copyright © 2019 Brett Mills. All rights reserved.
+//
+
+#ifndef linked_list_h
+#define linked_list_h
+
+#include <cstddef>
+#include <iostream>
+
+using namespace std;
+
+#ifdef UNIT_TESTING
+int main(int argc, const char* argv[]);
+#endif
+
+namespace custom
+{
+    template <class T>
+    class node
+    {
+    public:
+        T data;
+        node * pNext;
+        node * pPrev;
+        
+        node();
+        node(T t);
+        
+    };
+    
+    /*******************************************
+     * LINKED LIST :: Default Constructor
+     *******************************************/
+    template <class T>
+    node<T>::node()
+    {
+        data  = NULL;
+        pNext = NULL;
+        pPrev = NULL;
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Non-Default Constructor
+     *******************************************/
+    template <class T>
+    node<T>::node(T t)
+    {
+        data = t;
+        pNext = NULL;
+        pPrev = NULL;
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Insert Operator
+     *******************************************/
+    template <class T>
+    ostream & operator<<(ostream & out, node <T> *rhs)
+    {
+        
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Insert
+     *******************************************/
+    template <class T>
+    node <T> * insert(node <T> * pNode, const T & t, bool after = false)
+    {
+        // create new node
+        node <T> *pNew = new node<T>(t);
+        
+        // connect prev and next nodes pointers to new node's
+        // correct prev and next nodes pointers
+        
+        // insert before current node
+        if (pNode != NULL && after == false)
+        {
+            pNew->pNext = pNode;
+            pNew->pPrev = pNode->pPrev;
+            pNode->pPrev = pNew;
+            //if new ones next is not the head
+            if (pNew->pPrev)
+            {
+                pNew->pPrev->pNext = pNew;
+            }
+        }
+        
+        // insert after current node
+        if (pNode != NULL && after == true)
+        {
+            pNew->pPrev = pNode;
+            pNew->pNext = pNode->pNext;
+            pNode->pNext = pNew;
+            //if new ones next is not the end
+            if (pNew->pNext)
+            {
+                pNew->pNext->pPrev = pNew;
+            }
+        }
+        
+        return pNew;
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Find
+     *******************************************/
+    template <class T>
+    node <T> * find(node <T> * pHead, const T & t)
+    {
+        return 0;
+
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Clear
+     *******************************************/
+    template <class T>
+    void clear(node <T> * & pHead)
+    {
+        // iterate throught every node of linked list
+        while (pHead != NULL)
+        {
+            node <T> *pDelete = pHead;
+            pHead = pHead->pNext;
+            delete pDelete;
+        }
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Copy
+     *******************************************/
+    template <class T>
+    node <T> * copy(node <T> * pSource)
+    {
+        node <T> *pDestination = new node<T>(pSource->data);
+        
+        node <T> *pSrc = pSource;
+        node <T> *pDes = pDestination;
+        
+        for (; ;)
+        {
+            
+        }
+        
+        return 0;
+    }
+    
+    /*******************************************
+     * LINKED LIST :: Remove
+     *******************************************/
+    template <class T>
+    node <T> * remove(const node <T> * pRemove)
+    {
+        return 0;
+    }
+}
+
+
+#endif /* linked_list_h */

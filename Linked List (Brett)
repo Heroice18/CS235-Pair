@@ -48,9 +48,10 @@ namespace custom
      * LINKED LIST :: Non-Default Constructor
      *******************************************/
     template <class T>
+    // maybe put "node<T>::node(const T &t)"
     node<T>::node(T t)
     {
-        data = t;
+        data  = t;
         pNext = NULL;
         pPrev = NULL;
     }
@@ -61,7 +62,14 @@ namespace custom
     template <class T>
     ostream & operator<<(ostream & out, node <T> *rhs)
     {
-        
+        while (rhs)
+        {
+            if (rhs->pNext)
+            {
+                rhs = rhs->pNext;
+            }
+        }
+        return out;
     }
     
     /*******************************************
@@ -71,6 +79,7 @@ namespace custom
     node <T> * insert(node <T> * pNode, const T & t, bool after = false)
     {
         // create new node
+        
         node <T> *pNew = new node<T>(t);
         
         // connect prev and next nodes pointers to new node's
@@ -90,7 +99,7 @@ namespace custom
         }
         
         // insert after current node
-        if (pNode != NULL && after == true)
+        else if (pNode != NULL && after == true)
         {
             pNew->pPrev = pNode;
             pNew->pNext = pNode->pNext;
@@ -100,6 +109,10 @@ namespace custom
             {
                 pNew->pNext->pPrev = pNew;
             }
+        }
+        else
+        {
+            throw "Error: inserting into NULL list.";
         }
         
         return pNew;
@@ -111,8 +124,14 @@ namespace custom
     template <class T>
     node <T> * find(node <T> * pHead, const T & t)
     {
-        return 0;
-
+        for (node <T> *p = pHead; p; p = p->pNext)
+        {
+            if (p->data == t)
+            {
+                return p;
+            }
+        }
+        return NULL;
     }
     
     /*******************************************
@@ -121,6 +140,10 @@ namespace custom
     template <class T>
     void clear(node <T> * & pHead)
     {
+        if (pHead == NULL)
+        {
+            throw "Error: freeing NULL list.";
+        }
         // iterate throught every node of linked list
         while (pHead != NULL)
         {
@@ -136,28 +159,106 @@ namespace custom
     template <class T>
     node <T> * copy(node <T> * pSource)
     {
-        node <T> *pDestination = new node<T>(pSource->data);
-        
-        node <T> *pSrc = pSource;
-        node <T> *pDes = pDestination;
-        
-        for (; ;)
+        // check if copying a NULL
+        if (pSource == NULL)
+            return NULL;
+
+        try
         {
+            node <T> *pDestination = new node<T>(pSource->data);
             
+//            node <T> *pSrc = pSource;
+            node <T> *pDes = pDestination;
+            
+            // end condition: when the current pointer == NULL
+            // increment: advance current to value of pNext
+//            for (node <T> * p = pSrc; p; p = p->pNext)
+//            {
+//                cout << "inside the loop " << p->data << endl;
+//                pDes = insert(pDes, pSrc->data, true);
+//            }
+//            return pDestination;
+            while (pSource->pNext)
+            {
+                pSource = pSource->pNext;
+                pDes->pNext = new node<T>(pSource->data);
+                pDes->pNext->pPrev = pDes;
+                pDes = pDes->pNext;
+            }
+            return pDestination;
         }
-        
-        return 0;
+        catch (bad_alloc)
+        {
+            throw "error";
+        }
     }
     
     /*******************************************
      * LINKED LIST :: Remove
      *******************************************/
     template <class T>
-    node <T> * remove(const node <T> * pRemove)
+    node <T> * remove(node <T> * &pRemove)
     {
-        return 0;
+        node <T> *pReturn = NULL;
+        if (pRemove == NULL)
+        {
+            return NULL;
+        }
+
+        if (pRemove->pPrev)
+        {
+            pRemove->pPrev->pNext = pRemove->pNext;
+        }
+        if (pRemove->pNext)
+        {
+            pRemove->pNext->pPrev = pRemove->pPrev;
+        }
+
+        if (pRemove->pPrev)
+        {
+            pReturn = pRemove->pPrev;
+        }
+        else
+        {
+            pReturn = pRemove->pNext;
+        }
+
+        delete pRemove;
+        pRemove = NULL;
+        return pReturn;
+
+//        if (pRemove == NULL)
+//        {
+//            return NULL;
+//        }
+//        else if (pRemove->pNext != NULL)
+//        {
+//            pRemove->pNext->pPrev = pRemove->pPrev;
+//        }
+//        else if (pRemove->pPrev != NULL)
+//        {
+//            pRemove->pPrev->pNext = pRemove->pNext;
+//        }
+//
+//        node <T> *pTemp = NULL;
+//
+//        if (pRemove->pPrev != NULL)
+//        {
+//            pTemp = pRemove -> pPrev;
+//        }
+//        else
+//        {
+//            pTemp = pRemove -> pNext;
+//        }
+//
+//        delete pRemove;
+//        pRemove = NULL;
+//        return pTemp;
+//
     }
 }
 
 
 #endif /* linked_list_h */
+
+

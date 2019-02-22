@@ -24,14 +24,16 @@ namespace custom
     class list
     {
     private:
+        /*******************************************
+         * Node Class
+         *******************************************/
         class node
         {
             friend list;
         private:
-        #ifdef UNIT_TESTING
-            friend int ::main(int argc, const char* argv[]);
-        #endif
-            
+            #ifdef UNIT_TESTING
+                friend int ::main(int argc, const char* argv[]);
+            #endif
             
             T data;
             node * pNext;
@@ -51,8 +53,9 @@ namespace custom
             }
         };
         
-        node *  pHead;
-        node *  pTail;
+        // list private data
+        node * pHead;
+        node * pTail;
         int    numElements;
         
     public:
@@ -87,9 +90,26 @@ namespace custom
         T   back()  const throw(const char *);
         
         // iterator stuff
+        class iterator;
+        // fix these when I can, they don't actually return NULL
+        // can't figure out syntax to create function
+        iterator erase(iterator it) { return NULL; }
+        iterator insert(iterator & it, const T & data) throw(const char *);
+        //        iterator insert(iterator & it, const T & data) throw(const char *);
+        
+        iterator find(T t) { return NULL; }
+        
+        
+        iterator begin() { return iterator(pHead); }
+        iterator end()   { return iterator(NULL);  }
+        
+        /*******************************************
+         * Iterator Class
+         *******************************************/
         class iterator
         {
             friend list;
+            friend node;
         private:
             typename list <T> :: node * ptr;
             
@@ -165,16 +185,7 @@ namespace custom
             friend iterator list<T>::erase(iterator it);
         };
         
-        friend class iterator;
-        // fix these when I can, they don't actually return NULL
-        // can't figure out syntax to create function
-        iterator erase(iterator it) { return NULL; }
-        iterator insert(iterator & it, const T & data) throw(const char *) { return NULL; }
-        iterator find(T t) { return NULL; }
-        
-        
-        iterator begin() { return iterator(pHead); }
-        iterator end()   { return iterator(NULL);  }
+       
     };
     
     /*******************************************
@@ -214,7 +225,9 @@ namespace custom
                     pCurrent = pCurrent->pNext;
                     numElements++;
                 }
-                pCurrent->pPrev = pSource->pPrev;
+                // didn't need this line of code
+                // not sure why though
+//                pCurrent->pPrev = pSource->pPrev;
                 pTail = pCurrent;
             }
             catch (bad_alloc)
@@ -262,16 +275,14 @@ namespace custom
     template <class T>
     void list<T>::clear()
     {
-        if (pHead == NULL)
-        {
-            throw "Error: freeing NULL list.";
-        }
         // iterate throught every node of linked list
         while (pHead != NULL)
         {
             node *pDelete = pHead;
             pHead = pHead->pNext;
+            
             delete pDelete;
+            pDelete = NULL;
         }
         pTail = pHead;
         numElements = 0;
@@ -283,7 +294,30 @@ namespace custom
     template <class T>
     void list<T>::push_front(const T t)
     {
+        try
+        {
+            // create new node with user input data
+            node *pNew = new node(t);
         
+            // check if container is empty
+            if (pHead == NULL)
+            {
+                pHead = pNew;
+                pTail = pNew;
+                numElements++;
+            }
+            else
+            {
+                pHead->pPrev = pNew;
+                pNew->pNext = pHead;
+                pHead = pNew;
+                numElements++;
+            }
+        }
+        catch (bad_alloc)
+        {
+            throw "ERROR: unable to allocate a new node for a list";
+        }
     }
     
     /*******************************************
@@ -292,7 +326,30 @@ namespace custom
     template <class T>
     void list<T>::push_back(const T t)
     {
-        
+        try
+        {
+            // create new node with user input data
+            node *pNew = new node(t);
+            
+            // check if container is empty
+            if (pHead == NULL)
+            {
+                pHead = pNew;
+                pTail = pNew;
+                numElements++;
+            }
+            else
+            {
+                pTail->pNext = pNew;
+                pNew->pPrev = pTail;
+                pTail = pNew;
+                numElements++;
+            }
+        }
+        catch (bad_alloc)
+        {
+            throw "ERROR: unable to allocate a new node for a list";
+        }
     }
     
     /*******************************************
@@ -301,7 +358,34 @@ namespace custom
     template <class T>
     void list<T>::pop_front()
     {
-        
+        if (pHead)
+        {
+            // new node to keep track of pHead
+            node *pDelete = pHead;
+            cout << pDelete->data << endl;
+            
+            cout << "befor pHead " << pHead->data << endl;
+            pHead = pHead->pNext;
+            cout << "after pHead " << pHead->data << endl;
+            // if more than one node
+            if (pHead && pHead->pNext)
+            {
+                cout << pHead->pNext->pPrev->data << endl;
+                pHead->pNext->pPrev = pHead;
+            }
+            pDelete = pHead->pPrev;
+            pDelete->data = NULL;
+            delete pDelete;
+            pHead->pPrev = NULL;
+            cout << "pDelete after NULL " << pDelete << endl;
+            
+            numElements--;
+            
+            if (pHead == NULL)
+            {
+                pTail = pHead;
+            }
+        }
     }
     
     /*******************************************
@@ -310,7 +394,26 @@ namespace custom
     template <class T>
     void list<T>::pop_back()
     {
-        
+        if (pTail)
+        {
+            // new node to keep track of pTail
+            node *pDelete = pTail;
+            
+            pTail = pTail->pPrev;
+            if (pTail && pTail->pPrev)
+            {
+                pTail->pPrev->pNext = pTail;
+            }
+            delete pDelete;
+            pDelete = NULL;
+            
+            numElements--;
+            
+            if (pTail == NULL)
+            {
+                pHead = pTail;
+            }
+        }
     }
 
     /*******************************************
@@ -345,15 +448,30 @@ namespace custom
         }
     }
     
-//    /*******************************************
-//     * LIST :: Insert
-//     *******************************************/
-//    template <class T>
-//    iterator list<T>::insert(iterator &it, const T & data) throw(const char *)
-//    {
-//
-//    }
-//
+    /*******************************************
+     * LIST :: Insert
+     *******************************************/
+    template <class T>
+    typename list<T>:: iterator list<T>::insert(iterator &it, const T & data) throw(const char *)
+    {
+        // create new node with user input data
+        node *pNew = new node(data);
+        
+//        if (it != NULL)
+//        {
+//            // algorithm like insert() from linked list
+//            // difference in that pNode now is "it"
+//            pNew->pNext = it;
+//            pNew->pPrev = it.pPrev;
+//            it.pPrev = pNew;
+//            if (pNew->pPrev)
+//            {
+//                pNew->pPrev->pNext = pNew;
+//            }
+//        }
+        return pNew;
+    }
+
 //    /*******************************************
 //     * LIST :: Erase
 //     *******************************************/
@@ -366,3 +484,4 @@ namespace custom
    
 }
 #endif /* list_h */
+

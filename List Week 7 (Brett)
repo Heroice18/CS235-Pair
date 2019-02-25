@@ -111,7 +111,8 @@ namespace custom
             friend list;
             friend node;
         private:
-            typename list <T> :: node * ptr;
+//            typename list <T> :: node * ptr;
+            node * ptr;
             
         public:
             // for testing purposes
@@ -132,36 +133,55 @@ namespace custom
             bool operator != (const iterator & rhs) const { return rhs.ptr != this->ptr; }
             bool operator == (const iterator & rhs) const { return rhs.ptr == this->ptr; }
             
-            T & operator * ()             { return ptr->data; }
-            const T & operator * () const { return ptr->data; }
+            T & operator * ()
+            {
+                if (NULL != this->ptr)
+                {
+                    return this->ptr->data;
+                }
+                else
+                    throw "Error: dereferencing null node.";
+            }
+            const T & operator * () const
+            {
+                if (NULL != this->ptr)
+                {
+                    return this->ptr->data;
+                }
+                else
+                    throw "Error: dereferencing null node.";
+            }
             
             // prefix increment
             iterator & operator ++ ()
             {
-                // check if ptr is not NULL
+                // check if ptr is NULL
                 if (ptr)
                 {
-                    ptr++;
+                    ptr = ptr->pNext;
+                    return *this;
                 }
-                return *this;
+                else
+                    throw "Error: incrementing null node.";
             }
             // postfix increment
             iterator operator ++ (int postfix)
             {
-                // check if ptr is not NULL
+                // check if ptr is NULL
                 if (ptr)
                 {
                     iterator tmp(*this);
-                    ptr++;
+                    ptr = ptr->pNext;
                     return tmp;
                 }
                 else
-                    return *this;
+                    throw "Error: incrementing null node.";
+
             }
             // prefix decrement
             iterator & operator -- ()
             {
-                // check if ptr is not NULL
+                // check if ptr is NULL
                 if (ptr)
                 {
                     ptr--;
@@ -171,11 +191,11 @@ namespace custom
             // postfix decrement
             iterator operator -- (int postfix)
             {
-                // check if ptr is not NULL
+                // check if ptr is NULL
                 if (ptr)
                 {
                     iterator tmp(*this);
-                    ptr--;
+                    ptr = ptr->pPrev;
                     return tmp;
                 }
                 return *this;
@@ -261,7 +281,7 @@ namespace custom
         clear();
         
         // allocate new elements
-        for (node * p = rhs.pHead; p; p->pNext)
+        for (node * p = rhs.pHead; p; p = p->pNext)
         {
             push_back(p->data);
         }
@@ -275,17 +295,38 @@ namespace custom
     template <class T>
     void list<T>::clear()
     {
-        // iterate throught every node of linked list
+        //  NOTE TO SELF
+        // pHead when clear() is called is NULL the first time
+        
+//        cout << "outside if statement " << pHead << endl;
+
+//        if (pHead)
+//        {
+//            // iterate throught every node of linked list
+////            cout << pHead << endl;
+//            while (pHead != NULL)
+//            {
+//                node *pDelete = pHead;
+////                pHead = pHead->pNext;
+//
+//                pDelete = NULL;
+//                delete pDelete;
+//            }
+////            cout << "while loop once" << endl;
+//            pTail = pHead;
+//            numElements = 0;
+//        }
+        
         while (pHead != NULL)
         {
             node *pDelete = pHead;
             pHead = pHead->pNext;
-            
             delete pDelete;
-            pDelete = NULL;
         }
+        
         pTail = pHead;
         numElements = 0;
+
     }
     
     /*******************************************
@@ -362,22 +403,19 @@ namespace custom
         {
             // new node to keep track of pHead
             node *pDelete = pHead;
-            cout << pDelete->data << endl;
             
-            cout << "befor pHead " << pHead->data << endl;
             pHead = pHead->pNext;
-            cout << "after pHead " << pHead->data << endl;
             // if more than one node
             if (pHead && pHead->pNext)
             {
-                cout << pHead->pNext->pPrev->data << endl;
-                pHead->pNext->pPrev = pHead;
+                pHead = pHead->pNext->pPrev;
             }
             pDelete = pHead->pPrev;
-            pDelete->data = NULL;
             delete pDelete;
+            
+            // free up the space
             pHead->pPrev = NULL;
-            cout << "pDelete after NULL " << pDelete << endl;
+            pDelete = NULL;
             
             numElements--;
             
@@ -400,11 +438,16 @@ namespace custom
             node *pDelete = pTail;
             
             pTail = pTail->pPrev;
+            // if more than one node
             if (pTail && pTail->pPrev)
             {
                 pTail->pPrev->pNext = pTail;
             }
+            pDelete = pTail->pNext;
             delete pDelete;
+            
+            // free up the space
+            pTail->pNext = NULL;
             pDelete = NULL;
             
             numElements--;
@@ -484,4 +527,5 @@ namespace custom
    
 }
 #endif /* list_h */
+
 

@@ -91,15 +91,9 @@ namespace custom
         
         // iterator stuff
         class iterator;
-        // fix these when I can, they don't actually return NULL
-        // can't figure out syntax to create function
-        iterator erase(iterator it) { return NULL; }
+        iterator erase(iterator it);
         iterator insert(iterator & it, const T & data) throw(const char *);
-        //        iterator insert(iterator & it, const T & data) throw(const char *);
-        
-        iterator find(T t) { return NULL; }
-        
-        
+        iterator find(T t);
         iterator begin() { return iterator(pHead); }
         iterator end()   { return iterator(NULL);  }
         
@@ -111,10 +105,12 @@ namespace custom
             friend list;
             friend node;
         private:
-//            typename list <T> :: node * ptr;
-            node * ptr;
+            typename list <T> :: node * ptr;
+//            node * ptr;
             
         public:
+            friend list;
+
             // for testing purposes
             #ifdef UNIT_TESTING
                 friend int ::main(int argc, const char* argv[]);
@@ -156,7 +152,7 @@ namespace custom
             iterator & operator ++ ()
             {
                 // check if ptr is NULL
-                if (ptr)
+                if (ptr->pNext)
                 {
                     ptr = ptr->pNext;
                     return *this;
@@ -176,7 +172,6 @@ namespace custom
                 }
                 else
                     throw "Error: incrementing null node.";
-
             }
             // prefix decrement
             iterator & operator -- ()
@@ -497,32 +492,136 @@ namespace custom
     template <class T>
     typename list<T>:: iterator list<T>::insert(iterator &it, const T & data) throw(const char *)
     {
-        // create new node with user input data
-        node *pNew = new node(data);
+        if (empty())
+        {
+            pHead = new node(data);
+            pTail = pHead;
+            return begin();
+        }
         
-//        if (it != NULL)
-//        {
-//            // algorithm like insert() from linked list
-//            // difference in that pNode now is "it"
-//            pNew->pNext = it;
-//            pNew->pPrev = it.pPrev;
-//            it.pPrev = pNew;
-//            if (pNew->pPrev)
-//            {
-//                pNew->pPrev->pNext = pNew;
-//            }
-//        }
-        return pNew;
+        try
+        {
+            node *pNode = new node(data);
+            
+            if (it == end())
+            {
+                pTail->pNext = pNode;
+                pNode->pPrev = pTail;
+                pTail = pNode;
+                it = pNode;
+            }
+            else
+            {
+                pNode->pNext = it.ptr;
+                pNode->pPrev = it.ptr->pPrev;
+                
+                // check tail
+                if (pNode->pNext)
+                {
+                    pNode->pNext->pPrev = pNode;
+                }
+                else
+                {
+                    pTail = pNode;
+                }
+                
+                // check head
+                if (pNode->pPrev)
+                {
+                    pNode->pPrev->pNext = pNode;
+                }
+                else
+                {
+                    pHead = pNode;
+                }
+                
+                it = pNode;
+            }
+            numElements++;
+            
+            return it;
+        }
+        catch (bad_alloc)
+        {
+            throw "ERROR: unable to allocate a new node for a list";
+        }
     }
 
-//    /*******************************************
-//     * LIST :: Erase
-//     *******************************************/
-//    template <class T>
-//    iterator list<T>::erase(iterator it)
-//    {
+    /*******************************************
+     * LIST :: Erase
+     *******************************************/
+    template <class T>
+    typename list<T>:: iterator list<T>::erase(iterator it)
+    {
+        iterator itReturn = end();
+        
+        if (it == end())
+        {
+            return end();
+        }
+
+        // next
+        if (it.ptr->pNext)
+        {
+            it.ptr->pNext->pPrev = it.ptr->pPrev;
+            itReturn = it.ptr->pNext;
+        }
+        else
+        {
+            pTail = pTail->pPrev;
+        }
+
+        // prev
+        if (it.ptr->pPrev)
+        {
+            it.ptr->pPrev->pNext = it.ptr->pNext;
+            itReturn = it.ptr->pPrev;
+        }
+        else
+        {
+            pHead = pHead->pNext;
+        }
+        
+//        if (it.ptr->pPrev)
+//        {
+//            it.ptr->pPrev->pNext = it.ptr->pNext;
+//        }
+//        if (it.ptr->pNext)
+//        {
+//            it.ptr->pNext->pPrev = it.ptr->pPrev;
+//        }
 //
-//    }
+//        if (it.ptr->pPrev)
+//        {
+//            itReturn = it.ptr->pPrev;
+//        }
+//        else
+//        {
+//            itReturn = it.ptr->pNext;
+//        }
+        
+        delete it.ptr;
+        it.ptr = NULL;
+        numElements--;
+        
+        return itReturn;
+    }
+    
+    /*******************************************
+     * LIST :: Find
+     *******************************************/
+    template <class T>
+    typename list<T>:: iterator list<T>::find(T t)
+    {
+        for (node *p = pHead; p; p = p->pNext)
+        {
+            if (p->data == t)
+            {
+                return p;
+            }
+        }
+        return end();
+    }
     
    
 }

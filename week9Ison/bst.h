@@ -89,10 +89,10 @@ namespace custom
         void clear();
         void insert(const T &t);
         void erase(iterator it);
-        iterator find(T t) { return root; } // not final
+        iterator find(const T &t);
         iterator begin();
 //        iterator rbegin();
-        iterator end()  { return iterator(NULL); }
+        iterator end();
         iterator rend() { return iterator(NULL); }
 
         /*******************************************
@@ -213,15 +213,15 @@ namespace custom
     {
        BNode *newNode = new BNode(t);
        BNode *parentNode = root;
-        BNode *destinationNode = root;
+       BNode *destinationNode = root;
 
       while(destinationNode != NULL)
        {
          if(t < destinationNode->data)
-         {
-               parentNode = destinationNode;
-               destinationNode = destinationNode->pLeft;
-         }
+            {
+                  parentNode = destinationNode;
+                  destinationNode = destinationNode->pLeft;
+            }
          else
          {
                parentNode = destinationNode;
@@ -232,16 +232,16 @@ namespace custom
 
       if(parentNode !=NULL)
       {
-      if(t < parentNode->data)
-      {
-         newNode->pParent = parentNode;
-         parentNode->pLeft = newNode;
-      }
-      else
-      {
-         newNode->pParent = parentNode;
-         parentNode->pRight = newNode;
-      }
+         if(t < parentNode->data)
+            {
+               newNode->pParent = parentNode;
+               parentNode->pLeft = newNode;
+            }
+         else
+            {
+               newNode->pParent = parentNode;
+               parentNode->pRight = newNode;
+            }
       }
       else
       {
@@ -266,7 +266,85 @@ namespace custom
     template <class T>
     typename BST<T>:: iterator BST<T>::begin()
     {
-        return root; // temporary, not final
+       //BNode *newNode = new BNode(t);
+       BNode *parentNode = root;
+       BNode *destinationNode = root;
+       while(destinationNode != NULL)
+       {
+          parentNode = destinationNode;
+          destinationNode = destinationNode -> pLeft;
+       }
+
+        return parentNode; // temporary, not final
+    }
+
+    /*******************************************
+     * BST :: End
+     *******************************************/
+    template <class T>
+    typename BST<T>:: iterator BST<T>::end()
+    {
+       //BNode *newNode = new BNode(t);
+       BNode *parentNode = root;
+       BNode *destinationNode = root;
+       while(destinationNode != NULL)
+       {
+          parentNode = destinationNode;
+          destinationNode = destinationNode -> pRight;
+       }
+
+        return parentNode; // temporary, not final
+    }
+
+    /*******************************************
+     * BST :: find
+     *******************************************/
+    template <class T>
+    typename BST<T>:: iterator BST<T>::find(const T &t)
+    {
+       BNode *newNode = new BNode(t);
+       BNode *parentNode = root;
+       BNode *destinationNode = root;
+       while(destinationNode != NULL)
+       {
+         if(t < destinationNode->data)
+            {
+                  parentNode = destinationNode;
+                  destinationNode = destinationNode->pLeft;
+            }
+         else if(t > destinationNode->data)
+         {
+               parentNode = destinationNode;
+               destinationNode = destinationNode->pRight;
+         }
+         else
+         {
+            return destinationNode;
+         }
+
+
+       }
+       /*
+
+       if(parentNode !=NULL)
+      {
+         if(t < parentNode->data)
+            {
+               newNode->pParent = parentNode;
+               parentNode->pLeft = newNode;
+            }
+         else
+            {
+               newNode->pParent = parentNode;
+               parentNode->pRight = newNode;
+            }
+      }
+      else
+      {
+         root = newNode;
+      }*/
+
+        return destinationNode; // temporary, not final
     }
 
     /*******************************************

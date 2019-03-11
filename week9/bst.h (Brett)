@@ -11,6 +11,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <stack>
 
 using namespace std;
 
@@ -77,7 +78,7 @@ namespace custom
         #endif
         
         //constructors
-        BST()  { root = NULL; }
+        BST()  { root = NULL; numElements = 0; }
         BST(const BST & rhs);
         ~BST() { clear(); }
         // operator
@@ -89,11 +90,11 @@ namespace custom
         void clear();
         void insert(const T &t);
         void erase(iterator it);
-        iterator find(T t) { return root; } // not final
+        iterator find(const T &t);
         iterator begin();
 //        iterator rbegin();
-        iterator end()  { return iterator(NULL); }
-        iterator rend() { return iterator(NULL); }
+        iterator end() ;
+//        iterator rend() { return iterator(NULL); }
         
         /*******************************************
          * Iterator Class
@@ -162,9 +163,64 @@ namespace custom
 //            iterator & operator--(int postfix);
             iterator & operator++()
             {
+                if (ptr != NULL)
+                {
+                    if (ptr->pRight)
+                    {
+                        ptr = ptr->pRight;
+                        while (ptr->pLeft)
+                        {
+                            ptr = ptr->pLeft;
+                        }
+                    }
+                    else if ((ptr->pRight == NULL) && (ptr->pParent->pLeft == ptr))
+                    {
+                        ptr = ptr->pParent;
+                    }
+                    else if ((ptr->pRight == NULL) && (ptr->pParent->pRight == ptr))
+                    {
+                        while ((ptr->pParent) && (ptr->pParent->pRight == ptr))
+                        {
+                            ptr = ptr->pParent;
+                        }
+                        ptr = ptr->pParent;
+                    }
+                }
+                else
+                    throw "ERRRRRROR";
+                    
                 return *this;
             }
-//            iterator & operator++(int postfix);
+            iterator & operator++(int postfix)
+            {
+                if (ptr != NULL)
+                {
+                    if (ptr->pRight)
+                    {
+                        ptr = ptr->pRight;
+                        while (ptr->pLeft)
+                        {
+                            ptr = ptr->pLeft;
+                        }
+                    }
+                    else if ((ptr->pRight == NULL) && (ptr->pParent->pLeft == ptr))
+                    {
+                        ptr = ptr->pParent;
+                    }
+                    else if ((ptr->pRight == NULL) && (ptr->pParent->pRight == ptr))
+                    {
+                        while ((ptr->pParent) && (ptr->pParent->pRight == ptr))
+                        {
+                            ptr = ptr->pParent;
+                        }
+                        ptr = ptr->pParent;
+                    }
+                }
+                else
+                    throw "ERRRRRROR";
+                
+                return *this;
+            }
             // END of iterator class
         };
         
@@ -177,7 +233,17 @@ namespace custom
     template <class T>
     BST<T>::BST(const BST & rhs)
     {
-        *this = rhs;
+        if (rhs.root == NULL)
+        {
+            root = NULL;
+            numElements = 0;
+//            *this = rhs;
+        }
+        else
+        {
+            numElements = 0;
+            copyBTree(rhs.root);
+        }
     }
     
     /*******************************************
@@ -233,7 +299,42 @@ namespace custom
     template <class T>
     void BST<T>::insert(const T &t)
     {
+        BNode *newNode = new BNode(t);
+        BNode *parentNode = root;
+        BNode *destinationNode = root;
         
+        while (destinationNode != NULL)
+        {
+            if (t < destinationNode->data)
+            {
+                parentNode = destinationNode;
+                destinationNode = destinationNode->pLeft;
+            }
+            else
+            {
+                parentNode = destinationNode;
+                destinationNode = destinationNode->pRight;
+            }
+        }
+        
+        if (parentNode != NULL)
+        {
+            if (t < parentNode->data)
+            {
+                newNode->pParent = parentNode;
+                parentNode->pLeft = newNode;
+            }
+            else
+            {
+                newNode->pParent = parentNode;
+                parentNode->pRight = newNode;
+            }
+        }
+        else
+        {
+            root = newNode;
+        }
+        numElements++;
     }
     
     /*******************************************
@@ -242,7 +343,91 @@ namespace custom
     template <class T>
     void BST<T>::erase(iterator it)
     {
+        // CASE: no children
+        if (it.ptr->pRight == NULL && it.ptr->pLeft == NULL)
+        {
+            if (it.ptr->pParent != NULL && it.ptr->pParent->pRight == it.ptr)
+            {
+                it.ptr->pParent->pRight = NULL;
+            }
+            if (it.ptr->pParent != NULL && it.ptr->pParent->pLeft == it.ptr)
+            {
+                it.ptr->pParent->pLeft = NULL;
+            }
+            delete it.ptr;
+        }
         
+        // CASE: no child
+        // no left child
+        else if (it.ptr->pRight == NULL && it.ptr->pLeft != NULL)
+        {
+            it.ptr->pLeft->pParent = it.ptr->pParent;
+            if (it.ptr->pParent != NULL && it.ptr->pParent->pRight == it.ptr)
+            {
+                it.ptr->pParent->pRight = it.ptr->pLeft;
+            }
+            if (it.ptr->pParent != NULL && it.ptr->pParent->pLeft == it.ptr)
+            {
+                it.ptr->pParent->pLeft = it.ptr->pLeft;
+            }
+            delete it.ptr;
+        }
+        // no right child
+        else if (it.ptr->pLeft == NULL && it.ptr->pRight != NULL)
+        {
+            it.ptr->pRight->pParent = it.ptr->pParent;
+            if (it.ptr->pParent != NULL && it.ptr->pParent->pRight == it.ptr)
+            {
+                it.ptr->pParent->pRight = it.ptr->pRight;
+            }
+            if (it.ptr->pParent != NULL && it.ptr->pParent->pLeft == it.ptr)
+            {
+                it.ptr->pParent->pLeft = it.ptr->pRight;
+            }
+            delete it.ptr;
+        }
+        
+        // CASE: two children
+        else if (it.ptr->pRight != NULL && it.ptr->pLeft != NULL)
+        {
+            iterator deleteIt(it++);
+            
+            if (it.ptr->pRight)
+            {
+                it.ptr->pRight->pParent = it.ptr->pParent;
+                it.ptr->pParent->pLeft = it.ptr->pRight;
+            }
+            else
+                it.ptr->pParent->pLeft = NULL;
+            
+            if (deleteIt.ptr->pParent != NULL)
+            {
+                if (deleteIt.ptr->pParent->pLeft == deleteIt.ptr)
+                {
+                    deleteIt.ptr->pParent->pLeft = it.ptr;
+                    it.ptr->pParent = deleteIt.ptr->pParent;
+                }
+                else if (deleteIt.ptr->pParent->pRight == deleteIt.ptr)
+                {
+                    deleteIt.ptr->pParent->pRight = it.ptr;
+                    it.ptr->pParent = deleteIt.ptr->pParent;
+                }
+            }
+            else
+            {
+                it.ptr->pParent = NULL;
+                root = it.ptr;
+            }
+            
+            deleteIt.ptr->pLeft->pParent = it.ptr;
+            it.ptr->pLeft = deleteIt.ptr->pLeft;
+            
+            deleteIt.ptr->pRight->pParent = it.ptr;
+            it.ptr->pRight = deleteIt.ptr->pRight;
+            
+            delete deleteIt.ptr;
+        }
+        numElements--;
     }
     
     /*******************************************
@@ -251,16 +436,61 @@ namespace custom
     template <class T>
     typename BST<T>:: iterator BST<T>::begin()
     {
-        return root; // temporary, not final
+        BNode *parentNode = root;
+        BNode *destinationNode = root;
+        while (destinationNode != NULL)
+        {
+            parentNode = destinationNode;
+            destinationNode = destinationNode->pLeft;
+        }
+        return parentNode;
     }
     
     /*******************************************
-     * BST :: rBegin
+     * BST :: End
      *******************************************/
-//    typename BST<T>:: iterator BST<T>::rbegin()
-//    {
-//
-//    }
+    template <class T>
+    typename BST<T>:: iterator BST<T>::end()
+    {
+        BNode *parentNode = root;
+        BNode *destinationNode = root;
+        while (destinationNode != NULL)
+        {
+            parentNode = destinationNode;
+            destinationNode = destinationNode->pRight;
+        }
+        return parentNode;
+    }
+    
+    /*******************************************
+     * BST :: Find
+     *******************************************/
+    template <class T>
+    typename BST<T>:: iterator BST<T>::find(const T &t)
+    {
+        BNode *newNode = new BNode(t);
+        BNode *parentNode = root;
+        BNode *destinationNode = root;
+        
+        while (destinationNode != NULL)
+        {
+            if (t < destinationNode->data)
+            {
+                parentNode = destinationNode;
+                destinationNode = destinationNode->pLeft;
+            }
+            else if (t > destinationNode->data)
+            {
+                parentNode = destinationNode;
+                destinationNode = destinationNode->pRight;
+            }
+            else
+            {
+                return destinationNode;
+            }
+        }
+        return destinationNode;
+    }
     
     /*******************************************
      * BST :: Delete Binary Tree
@@ -294,18 +524,25 @@ namespace custom
         // create destination node
         BNode *pDes = new BNode(pSrc->data);
         
+        numElements++;
+        if (root == NULL)
+        {
+            root = pDes;
+        }
+        
+        // left
         pDes->pLeft = copyBTree(pSrc->pLeft);
         if (pDes->pLeft != NULL)
         {
             pDes->pLeft->pParent = pDes;
         }
         
+        // right
         pDes->pRight = copyBTree(pSrc->pRight);
         if (pDes->pRight != NULL)
         {
             pDes->pRight->pParent = pDes;
         }
-        numElements++;
         return pDes;
     }
     
@@ -320,3 +557,4 @@ namespace custom
 
 
 #endif /* bst_h */
+

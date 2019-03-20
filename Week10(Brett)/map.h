@@ -13,13 +13,13 @@
 #include <iostream>
 #include <stack>
 
-#include "pair.h"
+//#include "pair.h"
 #include "bst.h"
 
 using namespace std;
 
 #ifdef UNIT_TESTING
-int main(int argc, const char* argv[]);
+    int main(int argc, const char* argv[]);
 #endif
 
 namespace custom
@@ -27,17 +27,57 @@ namespace custom
     template <class K, class V>
     class map
     {
-    private:
-        BST <pair<K, V>> bst;
         
     public:
         // for testing purposes
         #ifdef UNIT_TESTING
-            int main(int argc, const char* argv[]);
+        friend int ::main(int argc, const char* argv[]);
         #endif
         
+        /*******************************************
+         * Map :: Pair Class
+         *******************************************/
+        class pair
+        {
+        public:
+            #ifdef UNIT_TESTING
+                int main(int argc, const char* argv[]);
+            #endif
+            
+            // constructors
+            pair() {}
+            pair(const K & first, const V & second) : first(first), second(second) {}
+            pair(const pair & rhs) : first(rhs.first), second(rhs.second) {}
+            
+            // copy the values
+            pair & operator = (const pair & rhs)
+            {
+                first  = rhs.first;
+                second = rhs.second;
+                return *this;
+            }
+            
+            // constant fetchers
+            const K & getFirst()  const { return first;  }
+            const V & getSecond() const { return second; }
+            
+            // compare Pairs.  Only first will be compared!
+            bool operator >  (const pair & rhs) const { return first >  rhs.first; }
+            bool operator >= (const pair & rhs) const { return first >= rhs.first; }
+            bool operator <  (const pair & rhs) const { return first <  rhs.first; }
+            bool operator <= (const pair & rhs) const { return first <= rhs.first; }
+            bool operator == (const pair & rhs) const { return first == rhs.first; }
+            bool operator != (const pair & rhs) const { return first != rhs.first; }
+            
+            // these are public.  We cannot validate!
+            K first;
+            V second;
+            
+            // END of Pair class
+        };
+    
         // constructors
-        map() { bst = NULL; }
+        map() {}
         map(map<K, V> &rhs) { *this = rhs; }
         ~map() { clear(); }
         
@@ -53,43 +93,50 @@ namespace custom
         void clear()       { this->bst.clear();  }
         
         // technical functions
-//        friend mapIterator;
-        class mapIterator;
+        class iterator;
         
-        mapIterator begin() { return bst.begin(); }
-        mapIterator end()   { return bst.end();   }
-        mapIterator find(K k);
+        iterator begin() { return bst.begin(); }
+        iterator end()   { return bst.end();   }
+        iterator find(K k);
         void insert(K k, V v);
 
+    private:
+        BST <pair> bst;
+        
+        // END of Map class
     };
     
     template <class K, class V>
-    class mapIterator
+    class iterator
     {
     private:
         typename BST<pair<K, V>>::iterator it;
-        
+
     public:
+        #ifdef UNIT_TESTING
+            int main(int argc, const char* argv[]);
+        #endif
+
         // constructors
-        mapIterator() { it = NULL; }
-        mapIterator(typename BST<pair<K, V>>::BNode *x)   { it = x; }
-        mapIterator(typename BST<pair<K, V>>::iterator x) { it = 0, it = x; }
-        mapIterator(const mapIterator<K, V> &rhs)         { it = rhs.it; }
+        iterator() { it = NULL; }
+        iterator(typename BST<pair<K, V>>::BNode *x)   { it = x; }
+        iterator(typename BST<pair<K, V>>::iterator x) { it = 0, it = x; }
+        iterator(const iterator &rhs)         { it = rhs.it; }
         // copy constructor
-        mapIterator(mapIterator<K, V> &copy)              { *this = copy; }
-        
+        iterator(iterator &copy)              { *this = copy; }
+
         // operators
-        bool operator==(const mapIterator<K, V> &rhs) { return rhs.it == this->it; }
-        bool operator!=(const mapIterator<K, V> &rhs) { return rhs.it != this->it; }
-        
+        bool operator==(const iterator &rhs) { return rhs.it == this->it; }
+        bool operator!=(const iterator &rhs) { return rhs.it != this->it; }
+
         // decrement
-        const mapIterator<K, V> &operator --()
+        const iterator &operator --()
         {
             --(this->it);
             return *this;
         }
         // increment
-        const mapIterator<K, V> &operator ++()
+        const iterator &operator ++()
         {
             ++(this->it);
             return *this;
@@ -111,7 +158,6 @@ namespace custom
         if(rhs.bst.begin() != NULL)
         {
             this->bst = rhs.bst;
-            this->numElements = rhs.numElements;
         }
         return *this;
     }
@@ -122,7 +168,7 @@ namespace custom
     template <class K, class V>
     V & map<K, V>::operator[](const K &k)
     {
-        pair<K, V> pair(k,V());
+        pair pair(k,V());
     }
     
     /*******************************************
@@ -133,7 +179,30 @@ namespace custom
     {
         
     }
+    
+//    /*****************************************************
+//     * PAIR INSERTION
+//     * Display a pair for debug purposes
+//     ****************************************************/
+//    template <class K, class V>
+//    inline std::ostream & operator << (std::ostream & out, const pair & rhs)
+//    {
+//        out << '(' << rhs.first << ", " << rhs.second << ')';
+//        return out;
+//    }
+//    
+//    /*****************************************************
+//     * PAIR EXTRACTION
+//     * input a pair
+//     ****************************************************/
+//    template <class K, class V>
+//    inline std::istream & operator >> (std::istream & in, pair & rhs)
+//    {
+//        in >> rhs.first >> rhs.second;
+//        return in;
+//    }
 }
 
 
 #endif /* map_h */
+

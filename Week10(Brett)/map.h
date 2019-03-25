@@ -13,7 +13,6 @@
 #include <iostream>
 #include <stack>
 
-//#include "pair.h"
 #include "bst.h"
 
 using namespace std;
@@ -75,6 +74,73 @@ namespace custom
             
             // END of Pair class
         };
+        
+        /*******************************************
+         * Map :: Iterator Class
+         *******************************************/
+        class iterator
+        {
+        public:
+            #ifdef UNIT_TESTING
+                int main(int argc, const char* argv[]);
+            #endif
+            friend pair;
+            
+            typename BST<pair>::iterator it;
+            
+            // constructors
+            iterator() { it = NULL; }
+            iterator(typename BST<pair>::BNode *x)   { it = x; }
+            iterator(typename BST<pair>::iterator x) { it = 0, it = x; }
+            iterator(const iterator &rhs)            { it = rhs.it; }
+            // copy constructor
+            iterator(iterator &copy)                 { *this = copy; }
+            
+            // operators
+            bool operator==(const iterator &rhs) { return rhs.it == this->it; }
+            bool operator!=(const iterator &rhs) { return rhs.it != this->it; }
+            
+            // decrement
+            iterator operator--()
+            {
+                if (it == NULL)
+                {
+                    throw "Error: decrementing null node.";
+                }
+                --it;
+                return *this;
+            }
+            iterator operator--(int postfix)
+            {
+                return iterator(it--);
+            }
+            // increment
+            iterator operator++()
+            {
+                if (it == NULL)
+                {
+                    throw "Error: incrementing null node.";
+                }
+                ++it;
+                return *this;
+            }
+            iterator operator++(int postfix)
+            {
+                return iterator(it++);
+            }
+            
+            // dereference
+            pair &operator *() // this is not supposed to be "const"
+            {
+                if (it == NULL)
+                {
+                    throw "Error: dereferencing null node.";
+                }
+                return *it;
+            }
+            
+            // END of Iterator class
+        };
     
         // constructors
         map() {}
@@ -88,64 +154,25 @@ namespace custom
         map<K, V> & operator=(map<K, V> &rhs);
         
         // standard interface functions
-        int  size()  const { return bst.size();  }
+        int  size()        { return bst.size();  }
         bool empty() const { return bst.empty(); }
         void clear()       { this->bst.clear();  }
         
         // technical functions
-        class iterator;
-        
         iterator begin() { return bst.begin(); }
         iterator end()   { return bst.end();   }
-        iterator find(K k);
+        iterator find(const K &k)
+        {
+            pair pair(k, V());
+            iterator it = bst.find(pair);
+            return iterator(it);
+        }
         void insert(K k, V v);
 
     private:
         BST <pair> bst;
         
         // END of Map class
-    };
-    
-    template <class K, class V>
-    class iterator
-    {
-    private:
-        typename BST<pair<K, V>>::iterator it;
-
-    public:
-        #ifdef UNIT_TESTING
-            int main(int argc, const char* argv[]);
-        #endif
-
-        // constructors
-        iterator() { it = NULL; }
-        iterator(typename BST<pair<K, V>>::BNode *x)   { it = x; }
-        iterator(typename BST<pair<K, V>>::iterator x) { it = 0, it = x; }
-        iterator(const iterator &rhs)         { it = rhs.it; }
-        // copy constructor
-        iterator(iterator &copy)              { *this = copy; }
-
-        // operators
-        bool operator==(const iterator &rhs) { return rhs.it == this->it; }
-        bool operator!=(const iterator &rhs) { return rhs.it != this->it; }
-
-        // decrement
-        const iterator &operator --()
-        {
-            --(this->it);
-            return *this;
-        }
-        // increment
-        const iterator &operator ++()
-        {
-            ++(this->it);
-            return *this;
-        }
-        // dereference
-        const V &operator *()
-        {
-            return this->it.operator*().getSecond();
-        }
     };
     
     /*******************************************
@@ -166,9 +193,18 @@ namespace custom
      * Map :: Index Operator
      *******************************************/
     template <class K, class V>
-    V & map<K, V>::operator[](const K &k)
+    V & map<K, V>::operator[](const K& k)
     {
-        pair pair(k,V());
+        // from Bro Manley
+        
+        pair pair(k, V());
+        iterator it = bst.find(pair);
+        if (it == NULL)
+        {
+            bst.insert(pair);
+            it = bst.find(pair);
+        }
+        return (*it).second;
     }
     
     /*******************************************
@@ -177,32 +213,18 @@ namespace custom
     template <class K, class V>
     void map<K, V>::insert(K k, V v)
     {
-        
+        pair pair(k, V());
+        iterator it = bst.find(pair);
+        if (it == NULL)
+        {
+            *it = pair;
+        }
+        else
+            bst.insert(pair);
     }
-    
-//    /*****************************************************
-//     * PAIR INSERTION
-//     * Display a pair for debug purposes
-//     ****************************************************/
-//    template <class K, class V>
-//    inline std::ostream & operator << (std::ostream & out, const pair & rhs)
-//    {
-//        out << '(' << rhs.first << ", " << rhs.second << ')';
-//        return out;
-//    }
-//    
-//    /*****************************************************
-//     * PAIR EXTRACTION
-//     * input a pair
-//     ****************************************************/
-//    template <class K, class V>
-//    inline std::istream & operator >> (std::istream & in, pair & rhs)
-//    {
-//        in >> rhs.first >> rhs.second;
-//        return in;
-//    }
 }
 
 
 #endif /* map_h */
+
 

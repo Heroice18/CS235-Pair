@@ -216,6 +216,9 @@ int main(int argc, const char * argv[])
     delete hashToCopy.table[4];
     delete [] hashToCopy.table;
     
+    // table** is a pointer to the first position in an array of list pointers
+    // or we mat just simply say, table is an array of list pointers
+    // see learncpp.com "pointers to pointers"
     //resetting
     hashToCopy.table = new list<int>*[5];
     hashToCopy.table[0] = new list<int>();
@@ -252,12 +255,12 @@ int main(int argc, const char * argv[])
     assert(copiedHash.table[0]->pTail == NULL);
     assert(copiedHash.table[1]->pHead == NULL);
     assert(copiedHash.table[1]->pTail == NULL);
-    assert(*(copiedHash.table[2]->pHead->data) = 7);
-    assert(*(copiedHash.table[2]->pTail->data) = 7);
-    assert(*(copiedHash.table[3]->pHead->data) = 8);
-    assert(*(copiedHash.table[3]->pTail->data) = 3);
-    assert(*(copiedHash.table[4]->pHead->data) = 9);
-    assert(*(copiedHash.table[4]->pTail->data) = 9);
+    assert((copiedHash.table[2]->pHead->data) = 7);
+    assert((copiedHash.table[2]->pTail->data) = 7);
+    assert((copiedHash.table[3]->pHead->data) = 8);
+    assert((copiedHash.table[3]->pTail->data) = 3);
+    assert((copiedHash.table[4]->pHead->data) = 9);
+    assert((copiedHash.table[4]->pTail->data) = 9);
     
     cout<<"Passed Copy Constructor Tests"<<endl;
     
@@ -291,15 +294,15 @@ int main(int argc, const char * argv[])
     assert(emptyAssignTo.numElements == 4);
     assert(emptyAssignTo.numBuckets == 3);
     assert(emptyAssignTo.table[0] != NULL);
-    assert(*(emptyAssignTo.table[0]->pHead->data) == 3);
+    assert((emptyAssignTo.table[0]->pHead->data) == 3);
     assert(emptyAssignTo.table[0]->pHead->pNext != NULL);
-    assert(*(emptyAssignTo.table[0]->pHead->pNext->data) == 9);
+    assert((emptyAssignTo.table[0]->pHead->pNext->data) == 9);
     
     assert(emptyAssignTo.table[1] != NULL);
-    assert(*(emptyAssignTo.table[1]->pHead->data) == 7);
+    assert((emptyAssignTo.table[1]->pHead->data) == 7);
     
     assert(emptyAssignTo.table[2] != NULL);
-    assert(*(emptyAssignTo.table[2]->pHead->data) == 8);
+    assert((emptyAssignTo.table[2]->pHead->data) == 8);
 
     Hash<int>emptyToAssign(1);
     
@@ -376,8 +379,8 @@ int main(int argc, const char * argv[])
     assert(emptyInsertHash.table[3]->pTail == NULL);
     assert(emptyInsertHash.table[4]->pHead == NULL);
     assert(emptyInsertHash.table[4]->pTail == NULL);
-    assert(*(emptyInsertHash.table[5]->pHead->data) == 12);
-    assert(*(emptyInsertHash.table[5]->pTail->data) == 12);
+    assert((emptyInsertHash.table[5]->pHead->data) == 12);
+    assert((emptyInsertHash.table[5]->pTail->data) == 12);
     assert(emptyInsertHash.table[6]->pHead == NULL);
     assert(emptyInsertHash.table[6]->pTail == NULL);
     
@@ -422,12 +425,12 @@ int main(int argc, const char * argv[])
      */
     assert(nonEmptyInsertHash.numBuckets == 3);
     assert(nonEmptyInsertHash.numElements == 5);
-    assert(*(nonEmptyInsertHash.table[0]->pHead->data) == 9);
-    assert(*(nonEmptyInsertHash.table[0]->pTail->data) == 6);
-    assert(*(nonEmptyInsertHash.table[1]->pHead->data) == 7);
-    assert(*(nonEmptyInsertHash.table[1]->pTail->data) == 22);
-    assert(*(nonEmptyInsertHash.table[2]->pHead->data) == 8);
-    assert(*(nonEmptyInsertHash.table[2]->pTail->data) == 8);
+    assert((nonEmptyInsertHash.table[0]->pHead->data) == 9);
+    assert((nonEmptyInsertHash.table[0]->pTail->data) == 6);
+    assert((nonEmptyInsertHash.table[1]->pHead->data) == 7);
+    assert((nonEmptyInsertHash.table[1]->pTail->data) == 22);
+    assert((nonEmptyInsertHash.table[2]->pHead->data) == 8);
+    assert((nonEmptyInsertHash.table[2]->pTail->data) == 8);
     
     
     nonEmptyInsertHash.insert(2, hashInt);
@@ -440,12 +443,12 @@ int main(int argc, const char * argv[])
      */
     assert(nonEmptyInsertHash.numBuckets == 3);
     assert(nonEmptyInsertHash.numElements == 6);
-    assert(*(nonEmptyInsertHash.table[0]->pHead->data) == 9);
-    assert(*(nonEmptyInsertHash.table[0]->pTail->data) == 6);
-    assert(*(nonEmptyInsertHash.table[1]->pHead->data) == 7);
-    assert(*(nonEmptyInsertHash.table[1]->pTail->data) == 22);
-    assert(*(nonEmptyInsertHash.table[2]->pHead->data) == 8);
-    assert(*(nonEmptyInsertHash.table[2]->pTail->data) == 2);
+    assert((nonEmptyInsertHash.table[0]->pHead->data) == 9);
+    assert((nonEmptyInsertHash.table[0]->pTail->data) == 6);
+    assert((nonEmptyInsertHash.table[1]->pHead->data) == 7);
+    assert((nonEmptyInsertHash.table[1]->pTail->data) == 22);
+    assert((nonEmptyInsertHash.table[2]->pHead->data) == 8);
+    assert((nonEmptyInsertHash.table[2]->pTail->data) == 2);
     
     /* hash array with lists is now (with <> meaning empty list)
      *                       [
@@ -457,13 +460,13 @@ int main(int argc, const char * argv[])
     nonEmptyInsertHash.insert(11, hashInt);
     assert(nonEmptyInsertHash.numBuckets == 3);
     assert(nonEmptyInsertHash.numElements == 7);
-    assert(*(nonEmptyInsertHash.table[0]->pHead->data) == 9);
-    assert(*(nonEmptyInsertHash.table[0]->pTail->data) == 6);
-    assert(*(nonEmptyInsertHash.table[1]->pHead->data) == 7);
-    assert(*(nonEmptyInsertHash.table[1]->pTail->data) == 22);
-    assert(*(nonEmptyInsertHash.table[2]->pHead->data) == 8);
-    assert(*(nonEmptyInsertHash.table[2]->pHead->pNext->data) == 2);
-    assert(*(nonEmptyInsertHash.table[2]->pTail->data) == 11);
+    assert((nonEmptyInsertHash.table[0]->pHead->data) == 9);
+    assert((nonEmptyInsertHash.table[0]->pTail->data) == 6);
+    assert((nonEmptyInsertHash.table[1]->pHead->data) == 7);
+    assert((nonEmptyInsertHash.table[1]->pTail->data) == 22);
+    assert((nonEmptyInsertHash.table[2]->pHead->data) == 8);
+    assert((nonEmptyInsertHash.table[2]->pHead->pNext->data) == 2);
+    assert((nonEmptyInsertHash.table[2]->pTail->data) == 11);
     
     cout<<"Passed Hash Insert Tests"<<endl;
     
@@ -562,22 +565,23 @@ int main(int argc, const char * argv[])
     
     
     
-    assert(*(nameHash.table[0]->pHead->data) == "boB");
-    assert(*(nameHash.table[0]->pTail->data) == "boB");
-    assert(*(nameHash.table[1]->pHead->data) == "Gunhilda");
-    assert(*(nameHash.table[1]->pHead->pNext->data) == "gunhilda");
-    assert(*(nameHash.table[1]->pHead->pNext->pNext->data) == "gunHilda");
-    assert(*(nameHash.table[2]->pHead->data) == "Sue");
-    assert(*(nameHash.table[2]->pTail->data) == "sue");
-    assert(*(nameHash.table[3]->pHead->data) == "~");
-    assert(*(nameHash.table[3]->pTail->data) == "~");
-    assert(*(nameHash.table[4]->pHead->data) == "Suzy");
-    assert(*(nameHash.table[4]->pTail->data) == "Suzy");
-    assert(*(nameHash.table[5]->pHead->data) == "");
-    assert(*(nameHash.table[5]->pHead->pNext->data) == " ");
-    assert(*(nameHash.table[5]->pHead->pNext->pNext->data) == "Sven");
-    assert(*(nameHash.table[5]->pHead->pNext->pNext->pNext->data) == "gunhildA");
+    assert((nameHash.table[0]->pHead->data) == "boB");
+    assert((nameHash.table[0]->pTail->data) == "boB");
+    assert((nameHash.table[1]->pHead->data) == "Gunhilda");
+    assert((nameHash.table[1]->pHead->pNext->data) == "gunhilda");
+    assert((nameHash.table[1]->pHead->pNext->pNext->data) == "gunHilda");
+    assert((nameHash.table[2]->pHead->data) == "Sue");
+    assert((nameHash.table[2]->pTail->data) == "sue");
+    assert((nameHash.table[3]->pHead->data) == "~");
+    assert((nameHash.table[3]->pTail->data) == "~");
+    assert((nameHash.table[4]->pHead->data) == "Suzy");
+    assert((nameHash.table[4]->pTail->data) == "Suzy");
+    assert((nameHash.table[5]->pHead->data) == "");
+    assert((nameHash.table[5]->pHead->pNext->data) == " ");
+    assert((nameHash.table[5]->pHead->pNext->pNext->data) == "Sven");
+    assert((nameHash.table[5]->pHead->pNext->pNext->pNext->data) == "gunhildA");
     
     cout << "This Hash can hold strings!!!!" << endl;
     
 }
+
